@@ -18,7 +18,8 @@ classifiers = [
 ]
 dependencies = [
     "mido",
-    "python-rtmidi"
+    "python-rtmidi",
+    "numpy"
 ]
 
 [project.urls]
