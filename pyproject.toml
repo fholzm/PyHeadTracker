@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "supperware"
+version = "0.1.0"
+description = "Python package for easy interaction with the Supperware head tracker 1"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Felix Holzmüller", email = "holzmueller@iem.at" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "mido",
+    "python-rtmidi"
+]
+
+[project.urls]
+Homepage = "https://github.com/fholzm/Python-Supperware"
+Issues = "https://github.com/fholzm/Python-Supperware/issues"
