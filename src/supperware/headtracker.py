@@ -186,6 +186,42 @@ class HeadTracker1:
         with mido.open_output(self.device_name) as output:
             output.send(msg_enc)
 
+    def read_orientation(self):
+        with mido.open_input(self.device_name) as input_port:
+            for msg in input_port:
+                # Check if it's orientation data
+                if msg.data[3] == 64:
+                    if self.orient_format == "ypr":
+                        yaw = self.__convert_14bit(msg.data[5], msg.data[6])
+                        pitch = self.__convert_14bit(msg.data[7], msg.data[8])
+                        roll = self.__convert_14bit(msg.data[9], msg.data[10])
+                        return yaw, pitch, roll
+                    elif self.orient_format == "q":
+                        q1 = self.__convert_14bit(msg.data[5], msg.data[6])
+                        q2 = self.__convert_14bit(msg.data[7], msg.data[8])
+                        q3 = self.__convert_14bit(msg.data[9], msg.data[10])
+                        q4 = self.__convert_14bit(msg.data[11], msg.data[12])
+                        return q1, q2, q3, q4
+                    elif self.orient_format == "orth":
+                        m11 = self.__convert_14bit(msg.data[5], msg.data[6])
+                        m12 = self.__convert_14bit(msg.data[7], msg.data[8])
+                        m13 = self.__convert_14bit(msg.data[9], msg.data[10])
+                        m21 = self.__convert_14bit(msg.data[11], msg.data[12])
+                        m22 = self.__convert_14bit(msg.data[13], msg.data[14])
+                        m23 = self.__convert_14bit(msg.data[15], msg.data[16])
+                        m31 = self.__convert_14bit(msg.data[17], msg.data[18])
+                        m32 = self.__convert_14bit(msg.data[19], msg.data[20])
+                        m33 = self.__convert_14bit(msg.data[21], msg.data[22])
+                        return np.array(
+                            [[m11, m12, m13], [m21, m22, m23], [m31, m32, m33]]
+                        )
+
+    def __convert_14bit(self, msb, lsb):
+        i = (128 * msb) + lsb
+        if i >= 8192:
+            i -= 16384
+        return i * 0.00048828125
+
     def __encode_message(self, msg):
         msg_hex = [f"{num:02X}" for num in msg]
         msg_hex = list("".join(msg_hex))

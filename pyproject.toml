@@ -7,7 +7,8 @@ name = "supperware"
 version = "0.1.0"
 description = "Python package for easy interaction with the Supperware head tracker 1"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     { name = "Felix Holzmüller", email = "holzmueller@iem.at" }
 ]
