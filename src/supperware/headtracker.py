@@ -63,27 +63,23 @@ class HeadTracker1:
 
         # Parameter 0 - sensor setup
         msg.append(0)
-        refresh_rate_bin = [
-            (
-                "00"
-                if self.refresh_rate == 50
-                else "01" if self.refresh_rate == 25 else "10"
-            )
-        ]
+        refresh_rate_bin = (
+            "00"
+            if self.refresh_rate == 50
+            else "01" if self.refresh_rate == 25 else "10"
+        )
         msg.append(int(f"0b1{refresh_rate_bin}1000", 2))
 
         # Parameter 1 - data output and formatting
         msg.append(1)
-        raw_format_bin = [
+        raw_format_bin = (
             "00" if not self.raw_format else "01" if self.compass_on else "10"
-        ]
-        orientation_format_bin = [
-            (
-                "00"
-                if self.orient_format == "ypr"
-                else "01" if self.orient_format == "q" else "10"
-            )
-        ]
+        )
+        orientation_format_bin = (
+            "00"
+            if self.orient_format == "ypr"
+            else "01" if self.orient_format == "q" else "10"
+        )
         msg.append(int(f"0b0{raw_format_bin}{orientation_format_bin}01", 2))
 
         # Parameter 2 is just resetting/calibrating the sensors --> not needed for opening connection
@@ -101,20 +97,17 @@ class HeadTracker1:
         # Parameter 4 - gestures and chirality
         if not self.gestures != "preserve" or self.chirality != "preserve":
             msg.append(4)
-            gestures_bin = [
-                (
-                    "000"
-                    if self.gestures == "preserve"
-                    else "100" if self.gestures == "off" else "110"
-                )
-            ]
-            chirality_bin = [
-                (
-                    "00"
-                    if self.chirality == "preserve"
-                    else "01" if self.chirality == "right" else "10"
-                )
-            ]
+            gestures_bin = (
+                "000"
+                if self.gestures == "preserve"
+                else "100" if self.gestures == "off" else "110"
+            )
+
+            chirality_bin = (
+                "00"
+                if self.chirality == "preserve"
+                else "01" if self.chirality == "right" else "10"
+            )
             msg.append(
                 int(
                     f"0b00{gestures_bin}{chirality_bin}",
@@ -131,9 +124,10 @@ class HeadTracker1:
 
         # Send message
         msg.append(247)  # End of SysEx message
+        msg_enc = self.__encode_message(msg)
 
         with mido.open_output(self.device_name) as output:
-            output.send(mido.Message("sysex", data=msg))
+            output.send(msg_enc)
 
         if self.travel_mode != "preserve":
             self.set_travel_mode(self.travel_mode)
@@ -143,17 +137,17 @@ class HeadTracker1:
     def close(self):
         """Close the connection to the head tracker."""
 
-        msg = [240, 0, 33, 66, 0, 1, 0, 247]
+        msg_enc = self.__encode_message([240, 0, 33, 66, 0, 1, 0, 247])
 
         with mido.open_output(self.device_name) as output:
-            output.send(mido.Message("sysex", data=msg))
+            output.send(msg_enc)
 
     def zero(self):
         """Zero the head tracker sensors."""
-        msg = [240, 0, 33, 66, 1, 0, 1, 247]
+        msg_enc = self.__encode_message([240, 0, 33, 66, 1, 0, 1, 247])
 
         with mido.open_output(self.device_name) as output:
-            output.send(mido.Message("sysex", data=msg))
+            output.send(msg_enc)
 
     def set_travel_mode(self, travel_mode: str):
         """Set the travel mode of the head tracker."""
@@ -174,9 +168,10 @@ class HeadTracker1:
             )
         )
         msg = [240, 0, 33, 66, 1, 1, int(travel_mode_bin, 2), 247]
+        msg_enc = self.__encode_message(msg)
 
         with mido.open_output(self.device_name) as output:
-            output.send(mido.Message("sysex", data=msg))
+            output.send(msg_enc)
 
     def calibrate_compass(self):
         """Calibrate the compass."""
@@ -186,6 +181,15 @@ class HeadTracker1:
         )
 
         msg = [240, 0, 33, 66, 0, 3, cal_message, 247]
+        msg_enc = self.__encode_message(msg)
 
         with mido.open_output(self.device_name) as output:
-            output.send(mido.Message("sysex", data=msg))
+            output.send(msg_enc)
+
+    def __encode_message(self, msg):
+        msg_hex = [f"{num:02X}" for num in msg]
+        msg_hex = list("".join(msg_hex))
+        # convert back to decimal
+        msg_dec = [int(num, 16) for num in msg_hex]
+
+        return mido.Message("sysex", data=msg_dec)
