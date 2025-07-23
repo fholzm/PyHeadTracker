@@ -89,7 +89,7 @@ class HeadTracker1:
         msg.append(3)
         msg.append(
             int(
-                f"0b00{int(self.compass_on)}{int(self.central_pull)}{int(compass_force_calibration)}00",
+                f"0b00{int(self.compass_on)}{int(not self.central_pull)}{int(compass_force_calibration)}00",
                 2,
             )
         )
@@ -123,7 +123,6 @@ class HeadTracker1:
             msg.append(int(np.round(self.central_pull_rate / 0.05)) - 1)
 
         # Send message
-        msg.append(247)  # End of SysEx message
         msg_enc = self.__encode_message(msg)
 
         with mido.open_output(self.device_name) as output:
@@ -137,14 +136,14 @@ class HeadTracker1:
     def close(self):
         """Close the connection to the head tracker."""
 
-        msg_enc = self.__encode_message([0, 33, 66, 0, 1, 0, 247])
+        msg_enc = self.__encode_message([0, 33, 66, 0, 1, 0])
 
         with mido.open_output(self.device_name) as output:
             output.send(msg_enc)
 
     def zero(self):
         """Zero the head tracker sensors."""
-        msg_enc = self.__encode_message([0, 33, 66, 1, 0, 1, 247])
+        msg_enc = self.__encode_message([0, 33, 66, 1, 0, 1])
 
         with mido.open_output(self.device_name) as output:
             output.send(msg_enc)
@@ -167,7 +166,7 @@ class HeadTracker1:
                 else "0b110" if travel_mode == "slow" else "0b111"
             )
         )
-        msg = [0, 33, 66, 1, 1, int(travel_mode_bin, 2), 247]
+        msg = [0, 33, 66, 1, 1, int(travel_mode_bin, 2)]
         msg_enc = self.__encode_message(msg)
 
         with mido.open_output(self.device_name) as output:
@@ -180,7 +179,7 @@ class HeadTracker1:
             2,
         )
 
-        msg = [0, 33, 66, 0, 3, cal_message, 247]
+        msg = [0, 33, 66, 0, 3, cal_message]
         msg_enc = self.__encode_message(msg)
 
         with mido.open_output(self.device_name) as output:
@@ -238,9 +237,10 @@ class HeadTracker1:
         return i * 0.00048828125
 
     def __encode_message(self, msg):
-        msg_hex = [f"{num:02X}" for num in msg]
-        msg_hex = list("".join(msg_hex))
+        # msg_hex = [f"{num:02X}" for num in msg]
+        # msg_hex = list("".join(msg_hex))
+        msg_hex = [hex(x) for x in msg]
         # convert back to decimal
         msg_dec = [int(num, 16) for num in msg_hex]
 
-        return mido.Message("sysex", data=msg_dec)
+        return mido.Message("sysex", data=msg)
