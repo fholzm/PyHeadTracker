@@ -22,7 +22,7 @@ while True:
             w, x, y, z = orientation
             client.send_message("/SceneRotator/quaternions", [w, -y, x, -z])
             # Print the quaternion values for debugging
-            print(f"WXYZ: {w:7.2f} {x:7.2f} {y:7.2f} {z:7.2f}", end="\r")
+            # print(f"WXYZ: {w:7.2f} {x:7.2f} {y:7.2f} {z:7.2f}", end="\r")
         else:
             print("Warning: No orientation data received.")
 

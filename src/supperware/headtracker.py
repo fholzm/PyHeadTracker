@@ -1,5 +1,6 @@
 import mido
 import numpy as np
+import time
 
 
 class HeadTracker1:
@@ -123,27 +124,28 @@ class HeadTracker1:
             msg.append(int(np.round(self.central_pull_rate / 0.05)) - 1)
 
         # Send message
-        msg_enc = self.__encode_message(msg)
+        msg_enc = mido.Message("sysex", data=msg)
 
         with mido.open_output(self.device_name) as output:
             output.send(msg_enc)
 
         if self.travel_mode != "preserve":
             self.set_travel_mode(self.travel_mode)
-
         # TODO: Return a status message or confirmation if successful
 
     def close(self):
         """Close the connection to the head tracker."""
 
-        msg_enc = self.__encode_message([0, 33, 66, 0, 1, 0])
+        msg_enc = mido.Message("sysex", data=[0, 33, 66, 0, 1, 0])
 
         with mido.open_output(self.device_name) as output:
             output.send(msg_enc)
 
+        time.sleep(0.2)  # Allow some time for the device to process the command
+
     def zero(self):
         """Zero the head tracker sensors."""
-        msg_enc = self.__encode_message([0, 33, 66, 1, 0, 1])
+        msg_enc = mido.Message("sysex", data=[0, 33, 66, 1, 0, 1])
 
         with mido.open_output(self.device_name) as output:
             output.send(msg_enc)
@@ -167,7 +169,7 @@ class HeadTracker1:
             )
         )
         msg = [0, 33, 66, 1, 1, int(travel_mode_bin, 2)]
-        msg_enc = self.__encode_message(msg)
+        msg_enc = mido.Message("sysex", data=msg)
 
         with mido.open_output(self.device_name) as output:
             output.send(msg_enc)
@@ -180,7 +182,7 @@ class HeadTracker1:
         )
 
         msg = [0, 33, 66, 0, 3, cal_message]
-        msg_enc = self.__encode_message(msg)
+        msg_enc = mido.Message("sysex", data=msg)
 
         with mido.open_output(self.device_name) as output:
             output.send(msg_enc)
@@ -235,12 +237,3 @@ class HeadTracker1:
         if i >= 8192:
             i -= 16384
         return i * 0.00048828125
-
-    def __encode_message(self, msg):
-        # msg_hex = [f"{num:02X}" for num in msg]
-        # msg_hex = list("".join(msg_hex))
-        msg_hex = [hex(x) for x in msg]
-        # convert back to decimal
-        msg_dec = [int(num, 16) for num in msg_hex]
-
-        return mido.Message("sysex", data=msg)

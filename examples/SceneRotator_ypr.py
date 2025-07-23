@@ -24,7 +24,7 @@ while True:
             )  # Convert radians to degrees
             client.send_message("/SceneRotator/ypr", [-y, p, -r])
             # Print the YPR values for debugging
-            print(f"YPR: {-y:7.2f} {p:7.2f} {-r:7.2f}", end="\r")
+            # print(f"YPR: {-y:7.2f} {p:7.2f} {-r:7.2f}", end="\r")
         else:
             print("Warning: No orientation data received.")
 
