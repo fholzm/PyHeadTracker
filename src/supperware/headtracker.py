@@ -24,10 +24,11 @@ class HeadTracker1:
         raw_format: bool = False,
         compass_on: bool = False,
         orient_format: str = "ypr",
-        gestures_on: str = "preserve",
+        gestures_on: str = "preserve",  # TODO: Add assertions
         chirality: str = "preserve",
         central_pull: bool = False,
         central_pull_rate: float = 0.3,
+        travel_mode: str = "preserve",
     ):
         self.device_name = device_name
 
@@ -53,6 +54,7 @@ class HeadTracker1:
         self.chirality = chirality
         self.central_pull = central_pull
         self.central_pull_rate = central_pull_rate
+        self.travel_mode = travel_mode
 
     def open(self, compass_force_calibration: bool = False):
         """Open the head tracker connection."""
@@ -133,12 +135,57 @@ class HeadTracker1:
         with mido.open_output(self.device_name) as output:
             output.send(mido.Message("sysex", data=msg))
 
+        if self.travel_mode != "preserve":
+            self.set_travel_mode(self.travel_mode)
+
         # TODO: Return a status message or confirmation if successful
 
     def close(self):
         """Close the connection to the head tracker."""
 
         msg = [240, 0, 33, 66, 0, 1, 0, 247]
+
+        with mido.open_output(self.device_name) as output:
+            output.send(mido.Message("sysex", data=msg))
+
+    def zero(self):
+        """Zero the head tracker sensors."""
+        msg = [240, 0, 33, 66, 1, 0, 1, 247]
+
+        with mido.open_output(self.device_name) as output:
+            output.send(mido.Message("sysex", data=msg))
+
+    def set_travel_mode(self, travel_mode: str):
+        """Set the travel mode of the head tracker."""
+        self.travel_mode = travel_mode
+        assert travel_mode in [
+            "preserve",
+            "off",
+            "slow",
+            "fast",
+        ], "Travel mode must be one of: preserve, off, slow, fast"
+        travel_mode_bin = (
+            "0b000"
+            if travel_mode == "preserve"
+            else (
+                "0b100"
+                if travel_mode == "off"
+                else "0b110" if travel_mode == "slow" else "0b111"
+            )
+        )
+        msg = [240, 0, 33, 66, 1, 1, int(travel_mode_bin, 2), 247]
+
+        with mido.open_output(self.device_name) as output:
+            output.send(mido.Message("sysex", data=msg))
+
+    def calibrate_compass(self):
+        """Calibrate the compass."""
+        cal_message = int(
+            f"0b00{int(self.compass_on)}{int(not self.central_pull)}100",
+            2,
+        )
+
+        msg = [240, 0, 33, 66, 0, 3, cal_message, 247]
 
         with mido.open_output(self.device_name) as output:
             output.send(mido.Message("sysex", data=msg))
