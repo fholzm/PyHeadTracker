@@ -59,7 +59,7 @@ class HeadTracker1:
     def open(self, compass_force_calibration: bool = False):
         """Open the head tracker connection."""
         # Start of message to open headtracker
-        msg = [240, 0, 33, 66]
+        msg = [0, 33, 66, 0]
 
         # Parameter 0 - sensor setup
         msg.append(0)
@@ -89,13 +89,13 @@ class HeadTracker1:
         msg.append(3)
         msg.append(
             int(
-                f"0b00{int(self.compass_on)}{int(not self.central_pull)}{int(compass_force_calibration)}00",
+                f"0b00{int(self.compass_on)}{int(self.central_pull)}{int(compass_force_calibration)}00",
                 2,
             )
         )
 
         # Parameter 4 - gestures and chirality
-        if not self.gestures != "preserve" or self.chirality != "preserve":
+        if self.gestures != "preserve" or self.chirality != "preserve":
             msg.append(4)
             gestures_bin = (
                 "000"
@@ -137,14 +137,14 @@ class HeadTracker1:
     def close(self):
         """Close the connection to the head tracker."""
 
-        msg_enc = self.__encode_message([240, 0, 33, 66, 0, 1, 0, 247])
+        msg_enc = self.__encode_message([0, 33, 66, 0, 1, 0, 247])
 
         with mido.open_output(self.device_name) as output:
             output.send(msg_enc)
 
     def zero(self):
         """Zero the head tracker sensors."""
-        msg_enc = self.__encode_message([240, 0, 33, 66, 1, 0, 1, 247])
+        msg_enc = self.__encode_message([0, 33, 66, 1, 0, 1, 247])
 
         with mido.open_output(self.device_name) as output:
             output.send(msg_enc)
@@ -167,7 +167,7 @@ class HeadTracker1:
                 else "0b110" if travel_mode == "slow" else "0b111"
             )
         )
-        msg = [240, 0, 33, 66, 1, 1, int(travel_mode_bin, 2), 247]
+        msg = [0, 33, 66, 1, 1, int(travel_mode_bin, 2), 247]
         msg_enc = self.__encode_message(msg)
 
         with mido.open_output(self.device_name) as output:
@@ -180,41 +180,56 @@ class HeadTracker1:
             2,
         )
 
-        msg = [240, 0, 33, 66, 0, 3, cal_message, 247]
+        msg = [0, 33, 66, 0, 3, cal_message, 247]
         msg_enc = self.__encode_message(msg)
 
         with mido.open_output(self.device_name) as output:
             output.send(msg_enc)
 
     def read_orientation(self):
+        if self.orient_format == "ypr":
+            return self.__read_orientation_ypr()
+        elif self.orient_format == "q":
+            return self.__read_orientation_q()
+        elif self.orient_format == "orth":
+            return self.__read_orientation_orth()
+
+    def __read_orientation_ypr(self):
         with mido.open_input(self.device_name) as input_port:
             for msg in input_port:
                 # Check if it's orientation data
                 if msg.data[3] == 64:
-                    if self.orient_format == "ypr":
-                        yaw = self.__convert_14bit(msg.data[5], msg.data[6])
-                        pitch = self.__convert_14bit(msg.data[7], msg.data[8])
-                        roll = self.__convert_14bit(msg.data[9], msg.data[10])
-                        return yaw, pitch, roll
-                    elif self.orient_format == "q":
-                        q1 = self.__convert_14bit(msg.data[5], msg.data[6])
-                        q2 = self.__convert_14bit(msg.data[7], msg.data[8])
-                        q3 = self.__convert_14bit(msg.data[9], msg.data[10])
-                        q4 = self.__convert_14bit(msg.data[11], msg.data[12])
-                        return q1, q2, q3, q4
-                    elif self.orient_format == "orth":
-                        m11 = self.__convert_14bit(msg.data[5], msg.data[6])
-                        m12 = self.__convert_14bit(msg.data[7], msg.data[8])
-                        m13 = self.__convert_14bit(msg.data[9], msg.data[10])
-                        m21 = self.__convert_14bit(msg.data[11], msg.data[12])
-                        m22 = self.__convert_14bit(msg.data[13], msg.data[14])
-                        m23 = self.__convert_14bit(msg.data[15], msg.data[16])
-                        m31 = self.__convert_14bit(msg.data[17], msg.data[18])
-                        m32 = self.__convert_14bit(msg.data[19], msg.data[20])
-                        m33 = self.__convert_14bit(msg.data[21], msg.data[22])
-                        return np.array(
-                            [[m11, m12, m13], [m21, m22, m23], [m31, m32, m33]]
-                        )
+                    yaw = self.__convert_14bit(msg.data[5], msg.data[6])
+                    pitch = self.__convert_14bit(msg.data[7], msg.data[8])
+                    roll = self.__convert_14bit(msg.data[9], msg.data[10])
+                    return np.array([yaw, pitch, roll])
+
+    def __read_orientation_q(self):
+        with mido.open_input(self.device_name) as input_port:
+            for msg in input_port:
+                # Check if it's orientation data
+                if msg.data[3] == 64:
+                    q1 = self.__convert_14bit(msg.data[5], msg.data[6])
+                    q2 = self.__convert_14bit(msg.data[7], msg.data[8])
+                    q3 = self.__convert_14bit(msg.data[9], msg.data[10])
+                    q4 = self.__convert_14bit(msg.data[11], msg.data[12])
+                    return np.array([q1, q2, q3, q4])
+
+    def __read_orientation_orth(self):
+        with mido.open_input(self.device_name) as input_port:
+            for msg in input_port:
+                # Check if it's orientation data
+                if msg.data[3] == 64:
+                    m11 = self.__convert_14bit(msg.data[5], msg.data[6])
+                    m12 = self.__convert_14bit(msg.data[7], msg.data[8])
+                    m13 = self.__convert_14bit(msg.data[9], msg.data[10])
+                    m21 = self.__convert_14bit(msg.data[11], msg.data[12])
+                    m22 = self.__convert_14bit(msg.data[13], msg.data[14])
+                    m23 = self.__convert_14bit(msg.data[15], msg.data[16])
+                    m31 = self.__convert_14bit(msg.data[17], msg.data[18])
+                    m32 = self.__convert_14bit(msg.data[19], msg.data[20])
+                    m33 = self.__convert_14bit(msg.data[21], msg.data[22])
+                    return np.array([[m11, m12, m13], [m21, m22, m23], [m31, m32, m33]])
 
     def __convert_14bit(self, msb, lsb):
         i = (128 * msb) + lsb
