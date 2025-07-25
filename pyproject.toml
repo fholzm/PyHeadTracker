@@ -25,5 +25,5 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/fholzm/Python-Supperware"
-Issues = "https://github.com/fholzm/Python-Supperware/issues"
+Homepage = "https://github.com/fholzm/PyHeadTracker"
+Issues = "https://github.com/fholzm/PyHeadTracker/issues"
