@@ -3,9 +3,9 @@ requires = ["uv_build>=0.8.2,<0.9.0"]
 build-backend = "uv_build"
 
 [project]
-name = "supperware"
+name = "pyheadtracker"
 version = "0.1.0"
-description = "Python package for easy interaction with the Supperware head tracker 1"
+description = "Python package for easy interaction with head tracker hardware."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]

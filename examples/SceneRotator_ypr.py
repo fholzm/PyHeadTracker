@@ -1,4 +1,4 @@
-import supperware
+from pyheadtracker import supperware
 from pythonosc.udp_client import SimpleUDPClient
 
 ip_out = "127.0.0.1"

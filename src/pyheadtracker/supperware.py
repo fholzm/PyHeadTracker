@@ -195,6 +195,8 @@ class HeadTracker1:
         elif self.orient_format == "orth":
             return self.__read_orientation_orth()
 
+    # TODO: Read raw data
+
     def __read_orientation_ypr(self):
         with mido.open_input(self.device_name) as input_port:
             for msg in input_port:
