@@ -32,7 +32,7 @@ with xr.ContextObject(
             for view_index, view in enumerate(context.view_loop(frame_state)):
                 run_idx += 1
 
-                if run_idx == 1:
+                if run_idx == 20:
                     ht.zero()
                 GL.glClearColor(*eye_colors[view_index])
                 GL.glClear(GL.GL_COLOR_BUFFER_BIT)
@@ -52,7 +52,7 @@ with xr.ContextObject(
                     client_roomencoder.send_message("/RoomEncoder/listenerX", x)
                     client_roomencoder.send_message("/RoomEncoder/listenerY", y)
                     client_roomencoder.send_message("/RoomEncoder/listenerZ", z)
-                    print(f"XYZ: {x:7.2f} {y:7.2f} {z:7.2f}", end="\r")
+                    # print(f"XYZ: {x:7.2f} {y:7.2f} {z:7.2f}", end="\r")
 
     except (EOFError, KeyboardInterrupt):
         print("\nClosing connection.")

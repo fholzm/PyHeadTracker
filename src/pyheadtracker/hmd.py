@@ -1,26 +1,37 @@
 import xr
 import numpy as np
+from typing import Optional
+from .dtypes import Quaternion, Position
 
 
 class openXR:
     def __init__(
         self,
         context: xr.ContextObject,
-        initial_pose: xr.Posef = None,
+        initial_pose: Optional[xr.Posef] = None,
         reset_pose: bool = False,
     ):
         """
         Initialize the HeadTracker class.
         """
         self.context = context
-        self.initial_pose = (
-            initial_pose
-            if initial_pose is not None
-            else xr.Posef(
-                position=xr.Vector3f(0.0, 0.0, 0.0),
-                orientation=xr.Quaternionf(1.0, 0.0, 0.0, 0.0),
+
+        if initial_pose is None:
+            self.reference_position = Position(0.0, 0.0, 0.0)
+            self.reference_orientation_inv = Quaternion(1.0, 0.0, 0.0, 0.0).inverse()
+        else:
+            self.reference_position = Position(
+                -initial_pose.position.z,
+                -initial_pose.position.x,
+                initial_pose.position.y,
             )
-        )
+            self.reference_orientation_inv = Quaternion(
+                initial_pose.orientation.w,
+                -initial_pose.orientation.z,
+                initial_pose.orientation.x,
+                initial_pose.orientation.y,
+            ).inverse()
+
         self.reset_pose = reset_pose
 
     def read_raw_pose(self, frame_state: xr.FrameState):
@@ -47,25 +58,30 @@ class openXR:
         if raw_pose is None:
             return None
 
+        # Convert the raw pose to a Position and Quaternion
+        # Note: OpenXR uses a right-handed coordinate system, so we need to adjust the
+        # position and orientation accordingly.
+        raw_position = Position(
+            -raw_pose.position.z,
+            -raw_pose.position.x,
+            raw_pose.position.y,
+        )
+        raw_orientation = Quaternion(
+            raw_pose.orientation.w,
+            -raw_pose.orientation.z,
+            raw_pose.orientation.x,
+            raw_pose.orientation.y,
+        )
+
         if self.reset_pose:
             # Reset the pose to the initial pose
-            self.initial_pose = raw_pose
+            self.reference_position = raw_position
+            self.reference_orientation_inv = raw_orientation.inverse()
             self.reset_pose = False
 
         # Get position and orientation relative to the initial pose
-        new_position = self._adjust_position(raw_pose.position)
-        new_orientation = self._adjust_orientation(raw_pose.orientation)
-
-        # Maniulate axes to match the expected coordinate system
-        new_position = np.array([-new_position.z, -new_position.x, new_position.y])
-        new_orientation = np.array(
-            [
-                new_orientation.w,
-                -new_orientation.z,
-                new_orientation.x,
-                new_orientation.y,
-            ]
-        )
+        new_position = self._adjust_position(raw_position)
+        new_orientation = self._adjust_orientation(raw_orientation)
 
         return {"position": new_position, "orientation": new_orientation}
 
@@ -98,27 +114,9 @@ class openXR:
         """
         self.initial_pose = self.reset_pose = True
 
-    def _invert_quaternion(self, q):
-        return xr.Quaternionf(w=q.w, x=-q.x, y=-q.y, z=-q.z)
-
-    def _multiply_quaternions(self, q1, q2):
-        return xr.Quaternionf(
-            w=q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z,
-            x=q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y,
-            y=q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x,
-            z=q1.w * q2.z + q1.x * q2.y - q1.y * q2.x + q1.z * q2.w,
-        )
-
-    def _adjust_orientation(self, current_orientation: xr.Quaternionf):
-        # Compute the inverse of the initial orientation
-        initial_inverse = self._invert_quaternion(self.initial_pose.orientation)
+    def _adjust_orientation(self, current_orientation: Quaternion):
         # Multiply the current orientation by the inverse of the initial orientation
-        return self._multiply_quaternions(current_orientation, initial_inverse)
-        # return current_orientation
+        return current_orientation * self.reference_orientation_inv
 
-    def _adjust_position(self, current_position: xr.Vector3f):
-        return xr.Vector3f(
-            x=current_position.x - self.initial_pose.position.x,
-            y=current_position.y - self.initial_pose.position.y,
-            z=current_position.z - self.initial_pose.position.z,
-        )
+    def _adjust_position(self, current_position: Position):
+        return current_position - self.reference_position

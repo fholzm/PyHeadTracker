@@ -1,4 +1,6 @@
 import numpy as np
+from typing import Optional
+from .utils import ypr2quat, quat2ypr
 
 
 class Quaternion:
@@ -31,6 +33,12 @@ class Quaternion:
         if len(arr) != 4:
             raise ValueError("Array must have exactly 4 elements.")
         return cls(arr[0], arr[1], arr[2], arr[3])
+
+    def __iter__(self):
+        """
+        Make the Quaternion iterable.
+        """
+        return iter(self.to_array())
 
     def __mul__(self, other):
         """
@@ -97,6 +105,12 @@ class Quaternion:
             conjugate.z / norm_squared,
         )
 
+    def to_ypr(self, degrees: bool = False, sequence: str = "ypr"):
+        """
+        Convert the quaternion to Yaw, Pitch, Roll angles.
+        """
+        return quat2ypr(self, degrees=degrees, sequence=sequence)
+
 
 class YPR:
     def __init__(self, yaw, pitch, roll, degrees: bool = False, sequence: str = "ypr"):
@@ -104,6 +118,8 @@ class YPR:
         Initialize Yaw, Pitch, Roll angles.
         """
         assert sequence in ["ypr", "rpy"], "Sequence must be 'ypr' or 'rpy'"
+
+        yaw, pitch, roll = self._wrap_angles(yaw, pitch, roll, degrees)
 
         self.yaw = yaw
         self.pitch = pitch
@@ -132,6 +148,86 @@ class YPR:
         if len(arr) != 3:
             raise ValueError("Array must have exactly 3 elements.")
         return cls(arr[0], arr[1], arr[2], degrees=degrees, sequence=sequence)
+
+    def __iter__(self):
+        """
+        Make the YPR iterable.
+        """
+        return iter(self.to_array())
+
+    def __add__(self, other):
+        """
+        Add another YPR to this YPR.
+        """
+        if not isinstance(other, YPR):
+            raise TypeError("Addition is only supported between two YPRs.")
+        if self.sequence != other.sequence:
+            raise ValueError("Cannot add YPRs with different angle sequences.")
+        if self.degrees != other.degrees:
+            raise ValueError("Cannot add YPRs with different degree settings.")
+
+        y = self.yaw + other.yaw
+        p = self.pitch + other.pitch
+        r = self.roll + other.roll
+
+        y, p, r = self._wrap_angles(y, p, r, degrees=self.degrees)
+
+        return YPR(
+            y,
+            p,
+            r,
+            degrees=self.degrees,
+            sequence=self.sequence,
+        )
+
+    def __sub__(self, other):
+        """
+        Subtract another YPR from this YPR.
+        """
+        if not isinstance(other, YPR):
+            raise TypeError("Subtraction is only supported between two YPRs.")
+        if self.sequence != other.sequence:
+            raise ValueError("Cannot subtract YPRs with different angle sequences.")
+        if self.degrees != other.degrees:
+            raise ValueError("Cannot subtract YPRs with different degree settings.")
+
+        y = self.yaw - other.yaw
+        p = self.pitch - other.pitch
+        r = self.roll - other.roll
+
+        y, p, r = self._wrap_angles(y, p, r, degrees=self.degrees)
+
+        return YPR(
+            y,
+            p,
+            r,
+            degrees=self.degrees,
+            sequence=self.sequence,
+        )
+
+    def _wrap_angles(self, y, p, r, degrees: Optional[bool] = None):
+        """
+        Wrap angles to the range [-180, 180] degrees or [-pi, pi] radians.
+        """
+        if degrees is None:
+            degrees = self.degrees
+
+        if degrees:
+            y = (y + 180) % 360 - 180
+            p = (p + 180) % 360 - 180
+            r = (r + 180) % 360 - 180
+        else:
+            y = (y + np.pi) % (2 * np.pi) - np.pi
+            p = (p + np.pi) % (2 * np.pi) - np.pi
+            r = (r + np.pi) % (2 * np.pi) - np.pi
+
+        return y, p, r
+
+    def to_quaternion(self):
+        """
+        Convert Yaw, Pitch, Roll to a Quaternion.
+        """
+        return ypr2quat(self.to_array(), degrees=self.degrees, sequence=self.sequence)
 
 
 class Position:
@@ -163,6 +259,12 @@ class Position:
         if len(arr) != 3:
             raise ValueError("Array must have exactly 3 elements.")
         return cls(arr[0], arr[1], arr[2])
+
+    def __iter__(self):
+        """
+        Make the Position iterable.
+        """
+        return iter(self.to_array())
 
     def __mul__(self, factor):
         """
