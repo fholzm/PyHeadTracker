@@ -34,36 +34,50 @@ class openXR:
         )
         flags = xr.ViewStateFlags(view_state.view_state_flags)
         if flags & xr.ViewStateFlags.POSITION_VALID_BIT:
-            current_pose = views[xr.Eye.LEFT].pose
-
-            if self.reset_pose:
-                # Reset the pose to the initial pose
-                self.initial_pose = current_pose
-                self.reset_pose = False
-
-            new_position = self._adjust_position(current_pose.position)
-            new_orientation = self._adjust_orientation(current_pose.orientation)
-
-            return xr.Posef(position=new_position, orientation=new_orientation)
+            return views[xr.Eye.LEFT].pose
         else:
             return None
+
+    def read_pose(self, frame_state: xr.FrameState):
+        """
+        Get the current head pose.
+        """
+        raw_pose = self.read_raw_pose(frame_state)
+
+        if raw_pose is None:
+            return None
+
+        if self.reset_pose:
+            # Reset the pose to the initial pose
+            self.initial_pose = raw_pose
+            self.reset_pose = False
+
+        # Get position and orientation relative to the initial pose
+        new_position = self._adjust_position(raw_pose.position)
+        new_orientation = self._adjust_orientation(raw_pose.orientation)
+
+        # Maniulate axes to match the expected coordinate system
+        new_position = np.array([-new_position.z, -new_position.x, new_position.y])
+        new_orientation = np.array(
+            [
+                new_orientation.w,
+                -new_orientation.z,
+                new_orientation.x,
+                new_orientation.y,
+            ]
+        )
+
+        return {"position": new_position, "orientation": new_orientation}
 
     def read_orientation(self, frame_state: xr.FrameState):
         """
         Get the current head orientation as a quaternion.
         """
         # Get the current time
-        pose = self.read_raw_pose(frame_state)
+        pose = self.read_pose(frame_state)
 
         if pose is not None:
-            return np.array(
-                [
-                    pose.orientation.w,
-                    -pose.orientation.z,
-                    pose.orientation.x,
-                    pose.orientation.y,
-                ]
-            )
+            return pose["orientation"]
         else:
             return None
 
@@ -72,9 +86,9 @@ class openXR:
         Get the current head position.
         """
         # Get the current time
-        pose = self.read_raw_pose(frame_state)
+        pose = self.read_pose(frame_state)
         if pose is not None:
-            return np.array([-pose.position.z, -pose.position.x, pose.position.y])
+            return pose["position"]
         else:
             return None
 
