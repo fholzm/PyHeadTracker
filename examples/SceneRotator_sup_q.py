@@ -6,7 +6,8 @@ port_out = 7000
 client = SimpleUDPClient(ip_out, port_out)
 
 ht = supperware.HeadTracker1(
-    device_name="Head Tracker",
+    device_name="Head Tracker 1",
+    device_name_output="Head Tracker 2",
     refresh_rate=50,
     compass_on=True,
     orient_format="q",
@@ -22,7 +23,7 @@ while True:
             w, x, y, z = orientation
             client.send_message("/SceneRotator/quaternions", [w, -y, x, -z])
             # Print the quaternion values for debugging
-            # print(f"WXYZ: {w:7.2f} {x:7.2f} {y:7.2f} {z:7.2f}", end="\r")
+            print(f"WXYZ: {w:7.2f} {x:7.2f} {y:7.2f} {z:7.2f}", end="\r")
         else:
             print("Warning: No orientation data received.")
 

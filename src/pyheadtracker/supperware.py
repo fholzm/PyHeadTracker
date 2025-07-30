@@ -1,6 +1,7 @@
 import mido
 import numpy as np
 import time
+from typing import Optional
 from .dtypes import YPR, Quaternion
 
 
@@ -22,6 +23,7 @@ class HeadTracker1:
     def __init__(
         self,
         device_name: str = "Head Tracker",
+        device_name_output: Optional[str] = None,
         refresh_rate: int = 50,
         raw_format: bool = False,
         compass_on: bool = False,
@@ -35,10 +37,19 @@ class HeadTracker1:
         self.device_name = device_name
 
         try:
-            mido.open_input(self.device_name)
+            with mido.open_input(self.device_name) as inport:
+                pass
         except IOError as e:
             raise RuntimeError(
-                f"Could not open MIDI input device '{self.device_name}': {e}"
+                f"Could not open MIDI input device '{self.device_name}': {e}\nAvailable devices: {mido.get_input_names()}"
+            )
+
+        try:
+            with mido.open_output(device_name_output or device_name) as outport:
+                pass
+        except IOError as e:
+            raise RuntimeError(
+                f"Could not open MIDI output device '{device_name_output or device_name}': {e}\nAvailable devices: {mido.get_output_names()}"
             )
 
         assert refresh_rate in [25, 50, 100], "Refresh rate must be 25, 50, or 100 Hz"
@@ -47,6 +58,11 @@ class HeadTracker1:
             "q",
             "orth",
         ], "Orientation format must be 'ypr', 'q', or 'orth'"
+
+        if device_name_output is None:
+            self.device_name_output = device_name
+        else:
+            self.device_name_output = device_name_output
 
         self.refresh_rate = refresh_rate
         self.raw_format = raw_format
@@ -127,7 +143,7 @@ class HeadTracker1:
         # Send message
         msg_enc = mido.Message("sysex", data=msg)
 
-        with mido.open_output(self.device_name) as output:
+        with mido.open_output(self.device_name_output) as output:
             output.send(msg_enc)
 
         if self.travel_mode != "preserve":
@@ -139,7 +155,7 @@ class HeadTracker1:
 
         msg_enc = mido.Message("sysex", data=[0, 33, 66, 0, 1, 0])
 
-        with mido.open_output(self.device_name) as output:
+        with mido.open_output(self.device_name_output) as output:
             output.send(msg_enc)
 
         time.sleep(0.2)  # Allow some time for the device to process the command
@@ -148,7 +164,7 @@ class HeadTracker1:
         """Zero the head tracker sensors."""
         msg_enc = mido.Message("sysex", data=[0, 33, 66, 1, 0, 1])
 
-        with mido.open_output(self.device_name) as output:
+        with mido.open_output(self.device_name_output) as output:
             output.send(msg_enc)
 
     def set_travel_mode(self, travel_mode: str):
@@ -172,7 +188,7 @@ class HeadTracker1:
         msg = [0, 33, 66, 1, 1, int(travel_mode_bin, 2)]
         msg_enc = mido.Message("sysex", data=msg)
 
-        with mido.open_output(self.device_name) as output:
+        with mido.open_output(self.device_name_output) as output:
             output.send(msg_enc)
 
     def calibrate_compass(self):
@@ -185,7 +201,7 @@ class HeadTracker1:
         msg = [0, 33, 66, 0, 3, cal_message]
         msg_enc = mido.Message("sysex", data=msg)
 
-        with mido.open_output(self.device_name) as output:
+        with mido.open_output(self.device_name_output) as output:
             output.send(msg_enc)
 
     def read_orientation(self):
