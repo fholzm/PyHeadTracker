@@ -2,6 +2,7 @@ import xr
 import numpy as np
 
 
+# TODO: Double check roll axis
 class openXR:
     def __init__(
         self,
@@ -23,7 +24,7 @@ class openXR:
         )
         self.reset_pose = reset_pose
 
-    def read_hmd_pose(self, frame_state: xr.FrameState):
+    def read_raw_pose(self, frame_state: xr.FrameState):
         view_state, views = xr.locate_views(
             session=self.context.session,
             view_locate_info=xr.ViewLocateInfo(
@@ -53,16 +54,15 @@ class openXR:
         Get the current head orientation as a quaternion.
         """
         # Get the current time
-        pose = self.read_hmd_pose(frame_state)
+        pose = self.read_raw_pose(frame_state)
 
-        # TODO: Looks like the order of quaternions is different in OpenXR
         if pose is not None:
             return np.array(
                 [
                     pose.orientation.w,
+                    pose.orientation.z,
                     pose.orientation.x,
                     pose.orientation.y,
-                    pose.orientation.z,
                 ]
             )
         else:
@@ -73,9 +73,9 @@ class openXR:
         Get the current head position.
         """
         # Get the current time
-        pose = self.read_hmd_pose(frame_state)
+        pose = self.read_raw_pose(frame_state)
         if pose is not None:
-            return np.array([pose.position.x, pose.position.y, pose.position.z])
+            return np.array([-pose.position.z, -pose.position.x, pose.position.y])
         else:
             return None
 
@@ -101,6 +101,7 @@ class openXR:
         initial_inverse = self._invert_quaternion(self.initial_pose.orientation)
         # Multiply the current orientation by the inverse of the initial orientation
         return self._multiply_quaternions(current_orientation, initial_inverse)
+        # return current_orientation
 
     def _adjust_position(self, current_position: xr.Vector3f):
         return xr.Vector3f(

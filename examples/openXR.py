@@ -4,9 +4,8 @@ import pyheadtracker
 import xr
 from pythonosc.udp_client import SimpleUDPClient
 
-ip_out = "127.0.0.1"
-port_out = 7000
-client = SimpleUDPClient(ip_out, port_out)
+client_scenerotator = SimpleUDPClient("127.0.0.1", 7000)
+client_roomencoder = SimpleUDPClient("127.0.0.1", 7001)
 
 
 with xr.ContextObject(
@@ -43,8 +42,17 @@ with xr.ContextObject(
 
                 if orientation is not None:
                     w, x, y, z = orientation
-                    client.send_message("/SceneRotator/quaternions", [w, -x, y, -z])
+                    client_scenerotator.send_message(
+                        "/SceneRotator/quaternions", [w, -x, y, -z]
+                    )
                     print(f"WXYZ: {w:7.2f} {x:7.2f} {y:7.2f} {z:7.2f}", end="\r")
+
+                if position is not None:
+                    x, y, z = position
+                    client_roomencoder.send_message("/RoomEncoder/listenerX", x)
+                    client_roomencoder.send_message("/RoomEncoder/listenerY", y)
+                    client_roomencoder.send_message("/RoomEncoder/listenerZ", z)
+                    print(f"XYZ: {x:7.2f} {y:7.2f} {z:7.2f}", end="\r")
 
     except (EOFError, KeyboardInterrupt):
         print("\nClosing connection.")
