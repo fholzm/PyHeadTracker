@@ -6,16 +6,15 @@ port_out = 7000
 client = SimpleUDPClient(ip_out, port_out)
 
 ht = iem.MrHeadTracker(
-    device_name="APRteacher",
+    device_name="MrHeadTracker 1",
     orient_format="q",
 )
-ht.open()
 
 
 while True:
     try:
         orientation = ht.read_orientation()
-        if len(orientation) == 4:
+        if orientation is not None:
             w, x, y, z = orientation
             client.send_message("/SceneRotator/quaternions", [w, -x, y, -z])
 
@@ -23,6 +22,5 @@ while True:
             print(f"WXYZ: {w:7.2f} {x:7.2f} {y:7.2f} {z:7.2f}", end="\r")
 
     except (EOFError, KeyboardInterrupt):
-        ht.close()
         print("\nClosing connection.")
         break

@@ -1,4 +1,5 @@
 import mido
+import time
 import numpy as np
 from .dtypes import Quaternion, YPR
 
@@ -25,82 +26,118 @@ class MrHeadTracker:
             raise RuntimeError(
                 f"Could not open MIDI input device '{self.device_name}': {e} \nAvailable devices: {mido.get_input_names()}"
             )
-        self.inport = None
+        self.ready = False
 
-    def open(self):
-        """Open the MIDI input device and start reading orientation data."""
-        self.inport = mido.open_input(self.device_name)
+        self.setted_bytes = 0
 
-    def close(self):
-        """Close the MIDI input device and stop reading orientation data."""
-        if self.inport is not None:
-            self.inport.close()
-        self.inport = None
+        # Initialize the individual bytes
+        self.orientation_bytes = {
+            "w_lsb": np.nan,
+            "x_lsb": np.nan,
+            "y_lsb": np.nan,
+            "z_lsb": np.nan,
+            "w_msb": np.nan,
+            "x_msb": np.nan,
+            "y_msb": np.nan,
+            "z_msb": np.nan,
+        }
 
     def read_orientation(self):
         """Read orientation data from the MIDI device."""
 
-        if self.inport is None:
-            raise RuntimeError("MIDI input device is not open.")
-
         n_messages = 8 if self.orient_format == "q" else 6
-        msg_list = []
-        # Catch last n_messages
-        # TODO: This collection doesn't work reliably on windows
-        for current_msg in self.inport.iter_pending():
-            msg_list.append(current_msg)
-            if len(msg_list) > n_messages:
-                break
 
-        return self._process_message(msg_list)
+        t_start = time.time()
 
-    def _process_message(self, msg_list):
+        # Collect messages until we have all bytes
+        with mido.open_input(self.device_name) as input_port:
+            for msg in input_port:
+                self.__decode_message(msg)
+
+                # If we have all bytes, break
+                if self.setted_bytes == n_messages:
+                    self.setted_bytes = 0
+                    self.ready = True
+                    break
+
+                # Break also if we don't receive any messages for a while
+                if time.time() - t_start > 0.1:
+                    self.ready = False
+                    break
+
+        return self.__process_message()
+
+    def __decode_message(self, msg):
+        if msg.type == "control_change":
+            if msg.control == 48 and self.orientation_bytes["w_lsb"] is np.nan:
+                self.orientation_bytes["w_lsb"] = msg.value
+                self.setted_bytes += 1
+            elif msg.control == 49 and self.orientation_bytes["x_lsb"] is np.nan:
+                self.orientation_bytes["x_lsb"] = msg.value
+                self.setted_bytes += 1
+            elif msg.control == 50 and self.orientation_bytes["y_lsb"] is np.nan:
+                self.orientation_bytes["y_lsb"] = msg.value
+                self.setted_bytes += 1
+            elif (
+                msg.control == 51
+                and self.orientation_bytes["z_lsb"] is np.nan
+                and self.orient_format == "q"
+            ):
+                self.orientation_bytes["z_lsb"] = msg.value
+                self.setted_bytes += 1
+
+            elif msg.control == 16 and self.orientation_bytes["w_msb"] is np.nan:
+                self.orientation_bytes["w_msb"] = msg.value
+                self.setted_bytes += 1
+            elif msg.control == 17 and self.orientation_bytes["x_msb"] is np.nan:
+                self.orientation_bytes["x_msb"] = msg.value
+                self.setted_bytes += 1
+            elif msg.control == 18 and self.orientation_bytes["y_msb"] is np.nan:
+                self.orientation_bytes["y_msb"] = msg.value
+                self.setted_bytes += 1
+            elif (
+                msg.control == 19
+                and self.orientation_bytes["z_msb"] is np.nan
+                and self.orient_format == "q"
+            ):
+                self.orientation_bytes["z_msb"] = msg.value
+                self.setted_bytes += 1
+
+    def __process_message(self):
         """Process incoming MIDI messages."""
-        orientation = {
-            "w_lsb": -1,
-            "x_lsb": -1,
-            "y_lsb": -1,
-            "z_lsb": -1,
-            "w_msb": -1,
-            "x_msb": -1,
-            "y_msb": -1,
-            "z_msb": -1,
-        }
-        for msg in msg_list:
-            if msg.type == "control_change":
-                if msg.control == 48 and orientation["w_lsb"] == -1:
-                    orientation["w_lsb"] = msg.value
-                elif msg.control == 49 and orientation["x_lsb"] == -1:
-                    orientation["x_lsb"] = msg.value
-                elif msg.control == 50 and orientation["y_lsb"] == -1:
-                    orientation["y_lsb"] = msg.value
-                elif msg.control == 51 and orientation["z_lsb"] == -1:
-                    orientation["z_lsb"] = msg.value
 
-                elif msg.control == 16 and orientation["w_msb"] == -1:
-                    orientation["w_msb"] = msg.value
-                elif msg.control == 17 and orientation["x_msb"] == -1:
-                    orientation["x_msb"] = msg.value
-                elif msg.control == 18 and orientation["y_msb"] == -1:
-                    orientation["y_msb"] = msg.value
-                elif msg.control == 19 and orientation["z_msb"] == -1:
-                    orientation["z_msb"] = msg.value
+        if not self.ready:
+            return None
 
-        if (
-            orientation["w_lsb"] != -1
-            and orientation["x_lsb"] != -1
-            and orientation["y_lsb"] != -1
-        ):
-            w = (((orientation["w_msb"] * 128) + orientation["w_lsb"]) / 8192.0) - 1
-            x = (((orientation["x_msb"] * 128) + orientation["x_lsb"]) / 8192.0) - 1
-            y = (((orientation["y_msb"] * 128) + orientation["y_lsb"]) / 8192.0) - 1
+        w = (
+            ((self.orientation_bytes["w_msb"] * 128) + self.orientation_bytes["w_lsb"])
+            / 8192.0
+        ) - 1
+        x = (
+            ((self.orientation_bytes["x_msb"] * 128) + self.orientation_bytes["x_lsb"])
+            / 8192.0
+        ) - 1
+        y = (
+            ((self.orientation_bytes["y_msb"] * 128) + self.orientation_bytes["y_lsb"])
+            / 8192.0
+        ) - 1
 
-            if self.orient_format == "ypr":
-                return YPR(y, x, w, "ypr")
+        if self.orient_format == "ypr":
+            out = YPR(y, x, w, "ypr")
 
-            if orientation["z_msb"] != -1 and orientation["z_lsb"] != -1:
-                z = (((orientation["z_msb"] * 128) + orientation["z_lsb"]) / 8192.0) - 1
-                return Quaternion(w, x, y, z)
+        else:
+            z = (
+                (
+                    (self.orientation_bytes["z_msb"] * 128)
+                    + self.orientation_bytes["z_lsb"]
+                )
+                / 8192.0
+            ) - 1
+            out = Quaternion(w, x, y, z)
 
-        # If we reach here, no valid orientation data was found
-        return None
+        # Reset the bytes for the next message
+        for key in self.orientation_bytes:
+            self.orientation_bytes[key] = np.nan
+
+        self.ready = False
+        return out
