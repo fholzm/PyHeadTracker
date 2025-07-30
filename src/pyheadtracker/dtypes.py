@@ -1,6 +1,4 @@
 import numpy as np
-from typing import Optional
-from .utils import ypr2quat, quat2ypr
 
 
 class Quaternion:
@@ -112,12 +110,6 @@ class Quaternion:
             conjugate.y / norm_squared,
             conjugate.z / norm_squared,
         )
-
-    def to_ypr(self, degrees: bool = False, sequence: str = "ypr"):
-        """
-        Convert the quaternion to Yaw, Pitch, Roll angles.
-        """
-        return quat2ypr(self, degrees=degrees, sequence=sequence)
 
 
 class YPR:
@@ -234,12 +226,6 @@ class YPR:
 
     def get_degree(self):
         return np.degrees(self.to_array())
-
-    def to_quaternion(self):
-        """
-        Convert Yaw, Pitch, Roll to a Quaternion.
-        """
-        return ypr2quat(self)
 
 
 class Position:

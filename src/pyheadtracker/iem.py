@@ -1,5 +1,6 @@
 import mido
 import numpy as np
+from .dtypes import Quaternion, YPR
 
 
 class MrHeadTracker:
@@ -18,10 +19,11 @@ class MrHeadTracker:
         self.orient_format = orient_format
 
         try:
-            self.midi_input = mido.open_input(self.device_name)
+            with mido.open_input(self.device_name) as inport:
+                pass
         except IOError as e:
             raise RuntimeError(
-                f"Could not open MIDI input device '{self.device_name}': {e}"
+                f"Could not open MIDI input device '{self.device_name}': {e} \nAvailable devices: {mido.get_input_names()}"
             )
         self.inport = None
 
@@ -44,6 +46,7 @@ class MrHeadTracker:
         n_messages = 8 if self.orient_format == "q" else 6
         msg_list = []
         # Catch last n_messages
+        # TODO: This collection doesn't work reliably on windows
         for current_msg in self.inport.iter_pending():
             msg_list.append(current_msg)
             if len(msg_list) > n_messages:
@@ -93,11 +96,11 @@ class MrHeadTracker:
             y = (((orientation["y_msb"] * 128) + orientation["y_lsb"]) / 8192.0) - 1
 
             if self.orient_format == "ypr":
-                return np.array([y, x, w])
+                return YPR(y, x, w, "ypr")
 
             if orientation["z_msb"] != -1 and orientation["z_lsb"] != -1:
                 z = (((orientation["z_msb"] * 128) + orientation["z_lsb"]) / 8192.0) - 1
-                return np.array([w, x, y, z])
+                return Quaternion(w, x, y, z)
 
         # If we reach here, no valid orientation data was found
-        return np.array([])
+        return None

@@ -1,6 +1,7 @@
 import mido
 import numpy as np
 import time
+from .dtypes import YPR, Quaternion
 
 
 class HeadTracker1:
@@ -205,7 +206,7 @@ class HeadTracker1:
                     yaw = self.__convert_14bit(msg.data[5], msg.data[6])
                     pitch = self.__convert_14bit(msg.data[7], msg.data[8])
                     roll = self.__convert_14bit(msg.data[9], msg.data[10])
-                    return np.array([yaw, pitch, roll])
+                    return YPR(yaw, pitch, roll, "ypr")
 
     def __read_orientation_q(self):
         with mido.open_input(self.device_name) as input_port:
@@ -216,7 +217,7 @@ class HeadTracker1:
                     q2 = self.__convert_14bit(msg.data[7], msg.data[8])
                     q3 = self.__convert_14bit(msg.data[9], msg.data[10])
                     q4 = self.__convert_14bit(msg.data[11], msg.data[12])
-                    return np.array([q1, q2, q3, q4])
+                    return Quaternion(q1, q2, q3, q4)
 
     def __read_orientation_orth(self):
         with mido.open_input(self.device_name) as input_port:
