@@ -2,7 +2,6 @@ import xr
 import numpy as np
 
 
-# TODO: Double check roll axis
 class openXR:
     def __init__(
         self,
@@ -60,7 +59,7 @@ class openXR:
             return np.array(
                 [
                     pose.orientation.w,
-                    pose.orientation.z,
+                    -pose.orientation.z,
                     pose.orientation.x,
                     pose.orientation.y,
                 ]
