@@ -40,6 +40,14 @@ class Quaternion:
         """
         return iter(self.to_array())
 
+    def __getitem__(self, index):
+        """
+        Get the quaternion component by index.
+        """
+        if index < 0 or index > 3:
+            raise IndexError("Index must be 0, 1, 2, or 3 for w, x, y, z respectively.")
+        return self.to_array()[index]
+
     def __mul__(self, other):
         """
         Quaternion multiplication (Hamilton product).
@@ -113,19 +121,23 @@ class Quaternion:
 
 
 class YPR:
-    def __init__(self, yaw, pitch, roll, degrees: bool = False, sequence: str = "ypr"):
+    def __init__(self, yaw, pitch, roll, sequence: str = "ypr"):
         """
         Initialize Yaw, Pitch, Roll angles.
         """
         assert sequence in ["ypr", "rpy"], "Sequence must be 'ypr' or 'rpy'"
+        assert (
+            np.abs(yaw) < 2 * np.pi
+            or np.abs(pitch) < 2 * np.pi
+            or np.abs(roll) < 2 * np.pi
+        ), "Angles must be in radians."
 
-        yaw, pitch, roll = self._wrap_angles(yaw, pitch, roll, degrees)
+        yaw, pitch, roll = self._wrap_angles(yaw, pitch, roll)
 
         self.yaw = yaw
         self.pitch = pitch
         self.roll = roll
         self.sequence = sequence
-        self.degrees = degrees
 
     def __repr__(self):
         """
@@ -147,13 +159,23 @@ class YPR:
         """
         if len(arr) != 3:
             raise ValueError("Array must have exactly 3 elements.")
-        return cls(arr[0], arr[1], arr[2], degrees=degrees, sequence=sequence)
+        return cls(arr[0], arr[1], arr[2], sequence=sequence)
 
     def __iter__(self):
         """
         Make the YPR iterable.
         """
         return iter(self.to_array())
+
+    def __getitem__(self, index):
+        """
+        Get the YPR component by index.
+        """
+        if index < 0 or index > 2:
+            raise IndexError(
+                "Index must be 0, 1, or 2 for yaw, pitch, roll respectively."
+            )
+        return self.to_array()[index]
 
     def __add__(self, other):
         """
@@ -163,20 +185,17 @@ class YPR:
             raise TypeError("Addition is only supported between two YPRs.")
         if self.sequence != other.sequence:
             raise ValueError("Cannot add YPRs with different angle sequences.")
-        if self.degrees != other.degrees:
-            raise ValueError("Cannot add YPRs with different degree settings.")
 
         y = self.yaw + other.yaw
         p = self.pitch + other.pitch
         r = self.roll + other.roll
 
-        y, p, r = self._wrap_angles(y, p, r, degrees=self.degrees)
+        y, p, r = self._wrap_angles(y, p, r)
 
         return YPR(
             y,
             p,
             r,
-            degrees=self.degrees,
             sequence=self.sequence,
         )
 
@@ -188,46 +207,39 @@ class YPR:
             raise TypeError("Subtraction is only supported between two YPRs.")
         if self.sequence != other.sequence:
             raise ValueError("Cannot subtract YPRs with different angle sequences.")
-        if self.degrees != other.degrees:
-            raise ValueError("Cannot subtract YPRs with different degree settings.")
 
         y = self.yaw - other.yaw
         p = self.pitch - other.pitch
         r = self.roll - other.roll
 
-        y, p, r = self._wrap_angles(y, p, r, degrees=self.degrees)
+        y, p, r = self._wrap_angles(y, p, r)
 
         return YPR(
             y,
             p,
             r,
-            degrees=self.degrees,
             sequence=self.sequence,
         )
 
-    def _wrap_angles(self, y, p, r, degrees: Optional[bool] = None):
+    def _wrap_angles(self, y, p, r):
         """
-        Wrap angles to the range [-180, 180] degrees or [-pi, pi] radians.
+        Wrap angles to the range [-pi, pi] radians.
         """
-        if degrees is None:
-            degrees = self.degrees
 
-        if degrees:
-            y = (y + 180) % 360 - 180
-            p = (p + 180) % 360 - 180
-            r = (r + 180) % 360 - 180
-        else:
-            y = (y + np.pi) % (2 * np.pi) - np.pi
-            p = (p + np.pi) % (2 * np.pi) - np.pi
-            r = (r + np.pi) % (2 * np.pi) - np.pi
+        y = (y + np.pi) % (2 * np.pi) - np.pi
+        p = (p + np.pi) % (2 * np.pi) - np.pi
+        r = (r + np.pi) % (2 * np.pi) - np.pi
 
         return y, p, r
+
+    def get_degree(self):
+        return np.degrees(self.to_array())
 
     def to_quaternion(self):
         """
         Convert Yaw, Pitch, Roll to a Quaternion.
         """
-        return ypr2quat(self.to_array(), degrees=self.degrees, sequence=self.sequence)
+        return ypr2quat(self)
 
 
 class Position:
@@ -265,6 +277,14 @@ class Position:
         Make the Position iterable.
         """
         return iter(self.to_array())
+
+    def __getitem__(self, index):
+        """
+        Get the position component by index.
+        """
+        if index < 0 or index > 2:
+            raise IndexError("Index must be 0, 1, or 2 for x, y, z respectively.")
+        return self.to_array()[index]
 
     def __mul__(self, factor):
         """

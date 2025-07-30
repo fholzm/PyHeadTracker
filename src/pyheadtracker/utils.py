@@ -1,7 +1,8 @@
 import numpy as np
+from .dtypes import Quaternion, YPR
 
 
-def quat2ypr(quat, degrees: bool = False, sequence: str = "ypr"):
+def quat2ypr(quat: Quaternion, sequence: str = "ypr"):
     """
     Convert a quaternion to yaw, pitch, and roll angles.
     :param quat: A numpy array or list with quaternion values [w, x, y, z].
@@ -28,15 +29,10 @@ def quat2ypr(quat, degrees: bool = False, sequence: str = "ypr"):
         t1 = 1.0 - 2.0 * (xy * xy + qx * qx)
         roll = np.arctan2(t0, t1)
 
-    if degrees:
-        roll = np.degrees(roll)
-        pitch = np.degrees(pitch)
-        yaw = np.degrees(yaw)
-
-    return np.array([yaw, pitch, roll])
+    return YPR(yaw, pitch, roll, sequence)
 
 
-def ypr2quat(ypr, degrees: bool = False, sequence: str = "ypr"):
+def ypr2quat(ypr: YPR):
     """
     Convert yaw, pitch, and roll angles to a quaternion.
     :param yaw: Yaw angle in radians.
@@ -44,10 +40,7 @@ def ypr2quat(ypr, degrees: bool = False, sequence: str = "ypr"):
     :param roll: Roll angle in radians.
     :return: A numpy array with quaternion values [w, x, y, z].
     """
-    assert sequence in ["ypr", "rpy"], "Sequence must be 'ypr' or 'rpy'"
-
-    if degrees:
-        ypr = np.radians(ypr)
+    assert ypr.sequence in ["ypr", "rpy"], "Sequence must be 'ypr' or 'rpy'"
 
     wa = np.cos(ypr[0] * 0.5)
     za = np.sin(ypr[0] * 0.5)
@@ -56,7 +49,7 @@ def ypr2quat(ypr, degrees: bool = False, sequence: str = "ypr"):
     wc = np.cos(ypr[2] * 0.5)
     xc = np.sin(ypr[2] * 0.5)
 
-    if sequence == "ypr":
+    if ypr.sequence == "ypr":
         qw = wc * wb * wa - xc * yb * za
         qx = wc * yb * za + xc * wb * wa
         qy = wc * yb * wa - xc * wb * za
