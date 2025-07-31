@@ -1,12 +1,37 @@
+"""
+Utility functions for quaternion and YPR conversions, and angle unit conversions.
+
+This module provides functions to convert between quaternions and YPR (Yaw, Pitch, Roll) angles,
+as well as to convert angles between radians and degrees. It also includes type checking for input data.
+It is part of the pyheadtracker package, which provides tools for head tracking and orientation data.
+
+Functions:
+- `quat2ypr(quat, sequence)`: Converts a quaternion to YPR angles.
+- `ypr2quat(ypr)`: Converts YPR angles to a quaternion.
+- `rad2deg(input_data)`: Converts radians to degrees.
+- `deg2rad(input_data)`: Converts degrees to radians.
+"""
+
 import numpy as np
 from .dtypes import Quaternion, YPR
 
 
 def quat2ypr(quat: Quaternion, sequence: str = "ypr"):
     """
-    Convert a quaternion to yaw, pitch, and roll angles.
-    :param quat: A numpy array or list with quaternion values [w, x, y, z].
-    :return: A tuple (yaw, pitch, roll) in radians.
+    Convert a Quaternion to an YPR (yaw, pitch, roll) object.
+
+    Parameters
+    ----------
+    quat : Quaternion
+        The quaternions object to be converted.
+    sequence : str, optional
+        The sequence of angles, either "ypr" (Yaw, Pitch, Roll) or "rpy" (Roll, Pitch, Yaw).
+        Default is "ypr".
+
+    Returns
+    -------
+    YPR
+        An YPR object containing the converted angles in radians.
     """
     assert sequence in ["ypr", "rpy"], "Sequence must be 'ypr' or 'rpy'"
 
@@ -34,11 +59,17 @@ def quat2ypr(quat: Quaternion, sequence: str = "ypr"):
 
 def ypr2quat(ypr: YPR):
     """
-    Convert yaw, pitch, and roll angles to a quaternion.
-    :param yaw: Yaw angle in radians.
-    :param pitch: Pitch angle in radians.
-    :param roll: Roll angle in radians.
-    :return: A numpy array with quaternion values [w, x, y, z].
+    Converts a YPR to a Quaternion object.
+
+    Parameters
+    ----------
+    ypr : YPR
+        The YPR object to be converted.
+
+    Returns
+    -------
+    Quaternion
+        A Quaternion object containing the converted values.
     """
     assert ypr.sequence in ["ypr", "rpy"], "Sequence must be 'ypr' or 'rpy'"
 
@@ -67,10 +98,14 @@ def rad2deg(input_data):
     """
     Converts input data from radians to degrees.
 
-    Parameters:
-        input_data (float, list, np.ndarray, or YPR): Input in radians.
+    Parameters
+    ----------
+    input_data : float, list, np.ndarray, or YPR
+        Input in radians.
 
-    Returns:
+    Returns
+    -------
+    float, list, np.ndarray, or YPR
         Converted data in degrees, with the same type as the input.
     """
     if isinstance(input_data, (float, int)):  # Single float or int
@@ -91,10 +126,14 @@ def deg2rad(input_data):
     """
     Converts input data from degrees to radians.
 
-    Parameters:
-        input_data (float, list, np.ndarray, or YPR): Input in degrees.
+    Parameters
+    ----------
+    input_data : float, list, or np.ndarray
+        Input in degrees.
 
-    Returns:
+    Returns
+    -------
+    float, list, or np.ndarray
         Converted data in radians, with the same type as the input.
     """
     if isinstance(input_data, (float, int)):  # Single float or int
