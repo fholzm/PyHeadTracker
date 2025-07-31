@@ -224,7 +224,7 @@ class YPR:
 
         return y, p, r
 
-    def get_degree(self):
+    def to_degrees(self):
         return np.degrees(self.to_array())
 
 

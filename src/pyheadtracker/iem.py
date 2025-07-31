@@ -140,7 +140,7 @@ class MrHeadTracker:
         ) - 1
 
         if self.orient_format == "ypr":
-            out = YPR(y, x, w, "ypr")
+            out = YPR(w * np.pi, x * np.pi, y * np.pi, "ypr")
 
         else:
             z = (
