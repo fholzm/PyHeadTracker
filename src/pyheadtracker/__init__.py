@@ -1,7 +1,14 @@
 # pyheadtracker/__init__.py
 
-import platform
+__version__ = "0.1.0"
+__author__ = "Felix Holzmüller"
+__license__ = "MIT"
+__description__ = "A Python library for reading head tracker data from various devices, aimed for the use in audio applications."
+__url__ = "https://github.com/fholzm/PyHeadTracker"
+__status__ = "Development"
 
+
+import platform
 from .dtypes import Quaternion, YPR
 
 __all__ = ["Quaternion", "YPR"]
