@@ -26,6 +26,9 @@ class MrHeadTracker:
             raise RuntimeError(
                 f"Could not open MIDI input device '{self.device_name}': {e} \nAvailable devices: {mido.get_input_names()}"
             )
+
+        self.inport = None
+
         self.ready = False
 
         self.setted_bytes = 0
@@ -42,28 +45,42 @@ class MrHeadTracker:
             "z_msb": np.nan,
         }
 
+    def open(self):
+        """Open the MIDI input port."""
+        if self.inport is None:
+            self.inport = mido.open_input(self.device_name)
+
+    def close(self):
+        """Close the MIDI input port."""
+        if self.inport is not None:
+            self.inport.close()
+            self.inport = None
+
     def read_orientation(self):
         """Read orientation data from the MIDI device."""
 
+        assert (
+            self.inport is not None
+        ), "MIDI input port is not open. Call open() first."
+
+        self.ready = False
         n_messages = 8 if self.orient_format == "q" else 6
 
         t_start = time.time()
 
         # Collect messages until we have all bytes
-        with mido.open_input(self.device_name) as input_port:
-            for msg in input_port:
-                self.__decode_message(msg)
+        for msg in self.inport:
+            self.__decode_message(msg)
 
-                # If we have all bytes, break
-                if self.setted_bytes == n_messages:
-                    self.setted_bytes = 0
-                    self.ready = True
-                    break
+            # If we have all bytes, break
+            if self.setted_bytes == n_messages:
+                self.setted_bytes = 0
+                self.ready = True
+                break
 
-                # Break also if we don't receive any messages for a while
-                if time.time() - t_start > 0.1:
-                    self.ready = False
-                    break
+            # Break also if we don't receive enough messages
+            if time.time() - t_start > 0.25:
+                return None
 
         return self.__process_message()
 

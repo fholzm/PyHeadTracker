@@ -9,6 +9,7 @@ ht = iem.MrHeadTracker(
     device_name="MrHeadTracker 1",
     orient_format="q",
 )
+ht.open()
 
 
 while True:
@@ -23,4 +24,5 @@ while True:
 
     except (EOFError, KeyboardInterrupt):
         print("\nClosing connection.")
+        ht.close()
         break
