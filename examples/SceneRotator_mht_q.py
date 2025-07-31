@@ -1,11 +1,11 @@
-from pyheadtracker import iem
+from pyheadtracker import diy
 from pythonosc.udp_client import SimpleUDPClient
 
 ip_out = "127.0.0.1"
 port_out = 7000
 client = SimpleUDPClient(ip_out, port_out)
 
-ht = iem.MrHeadTracker(
+ht = diy.MrHeadTracker(
     device_name="MrHeadTracker 1",
     orient_format="q",
 )

@@ -17,9 +17,9 @@ else:
     )
 
 from . import supperware
-from . import iem
+from . import diy
 from . import utils
 
 __all__.append("supperware")
-__all__.append("iem")
+__all__.append("diy")
 __all__.append("utils")
