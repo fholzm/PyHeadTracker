@@ -64,6 +64,9 @@ class HeadTracker1:
         else:
             self.device_name_output = device_name_output
 
+        self.inport = None
+        self.outport = None
+
         self.refresh_rate = refresh_rate
         self.raw_format = raw_format
         self.compass_on = compass_on
@@ -76,6 +79,12 @@ class HeadTracker1:
 
     def open(self, compass_force_calibration: bool = False):
         """Open the head tracker connection."""
+        # Open device
+        if self.inport is None:
+            self.inport = mido.open_input(self.device_name)
+        if self.outport is None:
+            self.outport = mido.open_output(self.device_name_output)
+
         # Start of message to open headtracker
         msg = [0, 33, 66, 0]
 
@@ -143,8 +152,7 @@ class HeadTracker1:
         # Send message
         msg_enc = mido.Message("sysex", data=msg)
 
-        with mido.open_output(self.device_name_output) as output:
-            output.send(msg_enc)
+        self.outport.send(msg_enc)
 
         if self.travel_mode != "preserve":
             self.set_travel_mode(self.travel_mode)
@@ -153,19 +161,20 @@ class HeadTracker1:
     def close(self):
         """Close the connection to the head tracker."""
 
-        msg_enc = mido.Message("sysex", data=[0, 33, 66, 0, 1, 0])
-
-        with mido.open_output(self.device_name_output) as output:
-            output.send(msg_enc)
+        if self.inport is not None:
+            self.inport.close()
+        if self.outport is not None:
+            msg_enc = mido.Message("sysex", data=[0, 33, 66, 0, 1, 0])
+            self.outport.send(msg_enc)
+            self.outport.close()
 
         time.sleep(0.2)  # Allow some time for the device to process the command
 
     def zero(self):
         """Zero the head tracker sensors."""
-        msg_enc = mido.Message("sysex", data=[0, 33, 66, 1, 0, 1])
-
-        with mido.open_output(self.device_name_output) as output:
-            output.send(msg_enc)
+        if self.outport is not None:
+            msg_enc = mido.Message("sysex", data=[0, 33, 66, 1, 0, 1])
+            self.outport.send(msg_enc)
 
     def set_travel_mode(self, travel_mode: str):
         """Set the travel mode of the head tracker."""
@@ -188,8 +197,8 @@ class HeadTracker1:
         msg = [0, 33, 66, 1, 1, int(travel_mode_bin, 2)]
         msg_enc = mido.Message("sysex", data=msg)
 
-        with mido.open_output(self.device_name_output) as output:
-            output.send(msg_enc)
+        if self.outport is not None:
+            self.outport.send(msg_enc)
 
     def calibrate_compass(self):
         """Calibrate the compass."""
@@ -201,8 +210,8 @@ class HeadTracker1:
         msg = [0, 33, 66, 0, 3, cal_message]
         msg_enc = mido.Message("sysex", data=msg)
 
-        with mido.open_output(self.device_name_output) as output:
-            output.send(msg_enc)
+        if self.outport is not None:
+            self.outport.send(msg_enc)
 
     def read_orientation(self):
         if self.orient_format == "ypr":
@@ -215,41 +224,47 @@ class HeadTracker1:
     # TODO: Read raw data
 
     def __read_orientation_ypr(self):
-        with mido.open_input(self.device_name) as input_port:
-            for msg in input_port:
-                # Check if it's orientation data
-                if msg.data[3] == 64:
-                    yaw = self.__convert_14bit(msg.data[5], msg.data[6])
-                    pitch = self.__convert_14bit(msg.data[7], msg.data[8])
-                    roll = self.__convert_14bit(msg.data[9], msg.data[10])
-                    return YPR(yaw, pitch, roll, "ypr")
+        if self.inport is None:
+            raise RuntimeError("MIDI input port is not open. Call open() first.")
+
+        for msg in self.inport:
+            # Check if it's orientation data
+            if msg.data[3] == 64:
+                yaw = self.__convert_14bit(msg.data[5], msg.data[6])
+                pitch = self.__convert_14bit(msg.data[7], msg.data[8])
+                roll = self.__convert_14bit(msg.data[9], msg.data[10])
+                return YPR(yaw, pitch, roll, "ypr")
 
     def __read_orientation_q(self):
-        with mido.open_input(self.device_name) as input_port:
-            for msg in input_port:
-                # Check if it's orientation data
-                if msg.data[3] == 64:
-                    q1 = self.__convert_14bit(msg.data[5], msg.data[6])
-                    q2 = self.__convert_14bit(msg.data[7], msg.data[8])
-                    q3 = self.__convert_14bit(msg.data[9], msg.data[10])
-                    q4 = self.__convert_14bit(msg.data[11], msg.data[12])
-                    return Quaternion(q1, q2, q3, q4)
+        if self.inport is None:
+            raise RuntimeError("MIDI input port is not open. Call open() first.")
+
+        for msg in self.inport:
+            # Check if it's orientation data
+            if msg.data[3] == 64:
+                q1 = self.__convert_14bit(msg.data[5], msg.data[6])
+                q2 = self.__convert_14bit(msg.data[7], msg.data[8])
+                q3 = self.__convert_14bit(msg.data[9], msg.data[10])
+                q4 = self.__convert_14bit(msg.data[11], msg.data[12])
+                return Quaternion(q1, q2, q3, q4)
 
     def __read_orientation_orth(self):
-        with mido.open_input(self.device_name) as input_port:
-            for msg in input_port:
-                # Check if it's orientation data
-                if msg.data[3] == 64:
-                    m11 = self.__convert_14bit(msg.data[5], msg.data[6])
-                    m12 = self.__convert_14bit(msg.data[7], msg.data[8])
-                    m13 = self.__convert_14bit(msg.data[9], msg.data[10])
-                    m21 = self.__convert_14bit(msg.data[11], msg.data[12])
-                    m22 = self.__convert_14bit(msg.data[13], msg.data[14])
-                    m23 = self.__convert_14bit(msg.data[15], msg.data[16])
-                    m31 = self.__convert_14bit(msg.data[17], msg.data[18])
-                    m32 = self.__convert_14bit(msg.data[19], msg.data[20])
-                    m33 = self.__convert_14bit(msg.data[21], msg.data[22])
-                    return np.array([[m11, m12, m13], [m21, m22, m23], [m31, m32, m33]])
+        if self.inport is None:
+            raise RuntimeError("MIDI input port is not open. Call open() first.")
+
+        for msg in self.inport:
+            # Check if it's orientation data
+            if msg.data[3] == 64:
+                m11 = self.__convert_14bit(msg.data[5], msg.data[6])
+                m12 = self.__convert_14bit(msg.data[7], msg.data[8])
+                m13 = self.__convert_14bit(msg.data[9], msg.data[10])
+                m21 = self.__convert_14bit(msg.data[11], msg.data[12])
+                m22 = self.__convert_14bit(msg.data[13], msg.data[14])
+                m23 = self.__convert_14bit(msg.data[15], msg.data[16])
+                m31 = self.__convert_14bit(msg.data[17], msg.data[18])
+                m32 = self.__convert_14bit(msg.data[19], msg.data[20])
+                m33 = self.__convert_14bit(msg.data[21], msg.data[22])
+                return np.array([[m11, m12, m13], [m21, m22, m23], [m31, m32, m33]])
 
     def __convert_14bit(self, msb, lsb):
         i = (128 * msb) + lsb
