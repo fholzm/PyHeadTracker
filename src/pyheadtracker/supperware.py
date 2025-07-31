@@ -170,6 +170,10 @@ class HeadTracker1:
 
         time.sleep(0.2)  # Allow some time for the device to process the command
 
+    def zero_orientation(self):
+        """Zero the head tracker sensors."""
+        self.zero()
+
     def zero(self):
         """Zero the head tracker sensors."""
         if self.outport is not None:

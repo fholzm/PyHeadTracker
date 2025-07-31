@@ -9,7 +9,8 @@ class openXR:
         self,
         context: xr.ContextObject,
         initial_pose: Optional[xr.Posef] = None,
-        reset_pose: bool = False,
+        reset_position: bool = False,
+        reset_orientation: bool = False,
     ):
         """
         Initialize the HeadTracker class.
@@ -32,7 +33,8 @@ class openXR:
                 initial_pose.orientation.y,
             ).inverse()
 
-        self.reset_pose = reset_pose
+        self.reset_position = reset_position
+        self.reset_orientation = reset_orientation
 
     def read_raw_pose(self, frame_state: xr.FrameState):
         view_state, views = xr.locate_views(
@@ -73,11 +75,14 @@ class openXR:
             raw_pose.orientation.y,
         )
 
-        if self.reset_pose:
-            # Reset the pose to the initial pose
+        if self.reset_position:
+            # Reset the position to zero
             self.reference_position = raw_position
+            self.reset_position = False
+        if self.reset_orientation:
+            # Reset the orientation
             self.reference_orientation_inv = raw_orientation.inverse()
-            self.reset_pose = False
+            self.reset_orientation = False
 
         # Get position and orientation relative to the initial pose
         new_position = self._adjust_position(raw_position)
@@ -112,7 +117,20 @@ class openXR:
         """
         Reset the head tracker to the initial pose.
         """
-        self.initial_pose = self.reset_pose = True
+        self.reset_position = True
+        self.reset_orientation = True
+
+    def zero_orientation(self):
+        """
+        Reset the head orientation to the initial orientation.
+        """
+        self.reset_orientation = True
+
+    def zero_position(self):
+        """
+        Reset the head position to the initial position.
+        """
+        self.reset_position = True
 
     def _adjust_orientation(self, current_orientation: Quaternion):
         # Multiply the current orientation by the inverse of the initial orientation
