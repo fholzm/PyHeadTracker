@@ -61,3 +61,49 @@ def ypr2quat(ypr: YPR):
         qz = wa * wb * xc + za * yb * wc
 
     return np.array([qw, qx, qy, qz])
+
+
+def rad2deg(input_data):
+    """
+    Converts input data from radians to degrees.
+
+    Parameters:
+        input_data (float, list, np.ndarray, or YPR): Input in radians.
+
+    Returns:
+        Converted data in degrees, with the same type as the input.
+    """
+    if isinstance(input_data, (float, int)):  # Single float or int
+        return np.degrees(input_data)
+    elif isinstance(input_data, list):  # List of values
+        return [np.degrees(x) for x in input_data]
+    elif isinstance(input_data, np.ndarray):  # NumPy array
+        return np.degrees(input_data)
+    elif isinstance(input_data, YPR):  # Custom YPR object
+        return input_data.to_degrees()
+    else:
+        raise TypeError(
+            "Unsupported input type. Supported types: float, list, np.ndarray, YPR."
+        )
+
+
+def deg2rad(input_data):
+    """
+    Converts input data from degrees to radians.
+
+    Parameters:
+        input_data (float, list, np.ndarray, or YPR): Input in degrees.
+
+    Returns:
+        Converted data in radians, with the same type as the input.
+    """
+    if isinstance(input_data, (float, int)):  # Single float or int
+        return np.radians(input_data)
+    elif isinstance(input_data, list):  # List of values
+        return [np.radians(x) for x in input_data]
+    elif isinstance(input_data, np.ndarray):  # NumPy array
+        return np.radians(input_data)
+    else:
+        raise TypeError(
+            "Unsupported input type. Supported types: float, list, np.ndarray, YPR."
+        )
