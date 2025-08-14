@@ -1,4 +1,4 @@
-image: "ghcr.io/astral-sh/uv:latest"
+image: astral/uv:alpine
 
 variables:
   GIT_DEPTH: 0
