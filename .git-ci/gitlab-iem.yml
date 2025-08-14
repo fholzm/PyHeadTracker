@@ -23,7 +23,7 @@ testpypi:
   extends: '.pypi-base'
   rules:
     # Only run if it's a pipeline for the default branch:
-    - if: '$CI_COMMIT_BRANCH == test'
+    - if: '$CI_COMMIT_BRANCH == "test"'
   environment:
     name: 'testpypi'
   variables:
