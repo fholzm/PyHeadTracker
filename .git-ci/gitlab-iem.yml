@@ -9,4 +9,5 @@ build:
     - uv build
   artifacts:
     paths:
-      - dist/
+      - dist/*.whl
+      - dist/*.tar.gz
