@@ -1,0 +1,12 @@
+image: ghcr.io/astral-sh/uv:latest
+
+variables:
+  GIT_DEPTH: 0
+
+build:
+  stage: build
+  script:
+    - uv build
+  artifacts:
+    paths:
+      - dist/
