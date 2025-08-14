@@ -4,18 +4,24 @@ build-backend = "uv_build"
 
 [project]
 name = "pyheadtracker"
-version = "0.1.0"
+version = "0.0.1"
+authors = [
+    { name = "Felix Holzmüller", email = "holzmueller@iem.at" }
+]
 description = "Python package for easy interaction with head tracker hardware."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
-authors = [
-    { name = "Felix Holzmüller", email = "holzmueller@iem.at" }
-]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Multimedia",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Scientific/Engineering :: Human Machine Interfaces",
+    "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator"
 ]
 requires-python = ">=3.10"
 dependencies = [
@@ -25,5 +31,6 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/fholzm/PyHeadTracker"
-Issues = "https://github.com/fholzm/PyHeadTracker/issues"
+Homepage = "https://git.iem.at/holzmueller/pyheadtracker"
+Issues = "https://git.iem.at/holzmueller/pyheadtracker/-/issues"
+Repository = "https://git.iem.at/holzmueller/pyheadtracker.git"
