@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "pyheadtracker"
-version = "0.0.1"
+version = "0.0.0"
 authors = [
     { name = "Felix Holzmüller", email = "holzmueller@iem.at" }
 ]
