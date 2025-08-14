@@ -15,9 +15,7 @@ build:
 .pypi-base:
   stage: 'deploy'
   script:
-    - pip install twine
-    - >-
-    - python3 -m twine upload --username __token__ --password "${PYPI_REPO_TOKEN}" --repository "${PYPI_REPOSITORY}" dist/*
+    - uv publish ${PUBLISH_URL} -t ${PYPI_REPO_TOKEN}
 
 testpypi:
   extends: '.pypi-base'
@@ -27,7 +25,7 @@ testpypi:
   environment:
     name: 'testpypi'
   variables:
-    PYPI_REPOSITORY: 'testpypi'
+    PUBLISH_URL: '--publish-url [https://upload.pypi.org/legacy/]'
     PYPI_REPO_TOKEN: ${PYPI_TEST_TOKEN}
 
 pypi:
@@ -39,5 +37,5 @@ pypi:
     name: 'pypi'
     url: 'https://pypi.org/project/pyheadtracker/'
   variables:
-    PYPI_REPOSITORY: 'pypi'
+    PUBLISH_URL: ''
     PYPI_REPO_TOKEN: ${PYPI_TOKEN}
