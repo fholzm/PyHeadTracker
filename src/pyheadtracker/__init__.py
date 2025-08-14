@@ -1,6 +1,6 @@
 # pyheadtracker/__init__.py
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __author__ = "Felix Holzmüller"
 __license__ = "MIT"
 __description__ = "A Python library for reading head tracker data from various devices, aimed for the use in audio applications."
