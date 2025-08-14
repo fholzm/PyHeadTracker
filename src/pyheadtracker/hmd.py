@@ -8,6 +8,7 @@ Classes:
 """
 
 import xr
+from xr.utils.gl import ContextObject
 from typing import Optional
 from .dtypes import Quaternion, Position
 
@@ -20,7 +21,7 @@ class openXR:
 
     Attributes
     ----------
-    context : xr.ContextObject
+    context : ContextObject
         The OpenXR context object.
     reference_position : Position
         A reference position, where the tracking data can be normalized to.
@@ -51,7 +52,7 @@ class openXR:
 
     def __init__(
         self,
-        context: xr.ContextObject,
+        context: ContextObject,
         initial_pose: Optional[xr.Posef] = None,
         reset_position: bool = False,
         reset_orientation: bool = False,
@@ -59,7 +60,7 @@ class openXR:
         """
         Parameters
         ----------
-        context : xr.ContextObject
+        context : ContextObject
             The OpenXR context object.
         initial_pose : xr.Posef, optional
             The initial pose of the HMD. If not provided, the position will be set to (0, 0, 0) and the orientation to the identity quaternion.

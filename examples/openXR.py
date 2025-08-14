@@ -2,13 +2,14 @@ from OpenGL import GL
 import numpy as np
 import pyheadtracker
 import xr
+from xr.utils.gl import ContextObject
 from pythonosc.udp_client import SimpleUDPClient
 
 client_scenerotator = SimpleUDPClient("127.0.0.1", 7000)
 client_roomencoder = SimpleUDPClient("127.0.0.1", 7001)
 
 
-with xr.ContextObject(
+with ContextObject(
     instance_create_info=xr.InstanceCreateInfo(
         enabled_extension_names=[
             # A graphics extension is mandatory (without a headless extension)
