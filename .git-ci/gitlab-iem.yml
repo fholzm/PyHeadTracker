@@ -25,7 +25,7 @@ testpypi:
   environment:
     name: 'testpypi'
   variables:
-    PUBLISH_URL: '--publish-url [https://upload.pypi.org/legacy/]'
+    PUBLISH_URL: '--publish-url https://upload.pypi.org/legacy/'
     PYPI_REPO_TOKEN: ${PYPI_TEST_TOKEN}
 
 pypi:
