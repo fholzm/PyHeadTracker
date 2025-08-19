@@ -48,3 +48,4 @@ push            = false
 [tool.bumpver.file_patterns]
 "pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
 "src/pyheadtracker/__init__.py" = ['__version__ = "{version}"']
+"docs/conf.py" = ['release = "{version}"']
