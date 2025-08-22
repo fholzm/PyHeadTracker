@@ -12,6 +12,8 @@ documentation for details.
 
 .. toctree::
    :caption: Contents:
+   :maxdepth: 3
 
    Home <self>
    api
+
