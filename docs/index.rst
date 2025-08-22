@@ -11,6 +11,8 @@ The use of head trackers can greatly enhance the user experience in applications
    :maxdepth: 2
 
    Home <self>
+   usage
+   examples
    api
 
 
