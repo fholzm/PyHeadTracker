@@ -43,5 +43,7 @@ pypi:
 include:
   - component: $CI_SERVER_FQDN/ci/readthedocs/publish@1.0.0
     inputs:
-      id: "pyheadtracker/307663"
+      id: "pyheadtracker/307664"
       token: "${READTHEDOCS_SECRET}"
+    rules:
+      - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
