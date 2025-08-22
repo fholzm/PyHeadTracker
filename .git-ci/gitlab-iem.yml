@@ -39,3 +39,9 @@ pypi:
   variables:
     PUBLISH_URL: ''
     PYPI_REPO_TOKEN: ${PYPI_TOKEN}
+
+include:
+  - component: $CI_SERVER_FQDN/ci/readthedocs/publish@1.0.0
+    inputs:
+      id: "pyheadtracker/307663"
+      token: "${READTHEDOCS_SECRET}"
