@@ -32,7 +32,7 @@ extensions = [
 autodoc_default_options = {
     "members": None,
     "undoc-members": None,
-    "member-order": "bysource",
+    "member-order": "groupwise",
     "special-members": "__init__",
     "exclude-members": "__weakref__",
     "show-inheritance": "True",
@@ -53,6 +53,9 @@ napoleon_use_admonition_for_references = False
 napoleon_use_ivar = False
 napoleon_use_param = False
 napoleon_use_rtype = False
+
+# Add this line to exclude Methods section from being parsed
+napoleon_custom_sections = [("Methods", "params_style")]
 
 intersphinx_mapping = {
     "rtd": ("https://docs.readthedocs.io/en/stable/", None),
@@ -77,6 +80,20 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # a list of builtin themes.
 #
 html_theme = "sphinx_rtd_theme"
+
+html_theme_options = {
+    "analytics_id": "",
+    "logo_only": False,
+    # "display_version": True,
+    "prev_next_buttons_location": "bottom",
+    "style_external_links": False,
+    "vcs_pageview_mode": "",
+    # Custom colors
+    "style_nav_header_background": "#567093",  # Dark blue navigation header
+    "navigation_depth": 4,
+    "includehidden": True,
+    "titles_only": False,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

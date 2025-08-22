@@ -2,7 +2,7 @@ API Documentation
 =================
 
 pyheadtracker.dtypes
--------------------
+--------------------
 
 .. automodule:: pyheadtracker.dtypes
     :members:
@@ -16,7 +16,7 @@ pyheadtracker.diy
     :members:
     :undoc-members:
     :show-inheritance:
-
+    
 pyheadtracker.supperware
 ------------------------
 
