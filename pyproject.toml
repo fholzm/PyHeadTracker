@@ -36,6 +36,7 @@ Homepage = "https://git.iem.at/holzmueller/pyheadtracker"
 Issues = "https://git.iem.at/holzmueller/pyheadtracker/-/issues"
 Repository = "https://git.iem.at/holzmueller/pyheadtracker.git"
 Changelog = "https://git.iem.at/holzmueller/pyheadtracker/-/blob/main/CHANGELOG.md"
+Documentation = "https://pyheadtracker.readthedocs.io/en/latest/"
 
 [tool.bumpver]
 current_version = "0.0.3"
@@ -49,3 +50,4 @@ push            = false
 "pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
 "src/pyheadtracker/__init__.py" = ['__version__ = "{version}"']
 "docs/conf.py" = ['release = "{version}"']
+"docs/requirements.txt" = ['pyheadtracker=={version}']

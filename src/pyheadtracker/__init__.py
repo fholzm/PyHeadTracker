@@ -9,9 +9,9 @@ __status__ = "Development"
 
 
 import platform
-from .dtypes import Quaternion, YPR
+from .dtypes import Quaternion, YPR, Position
 
-__all__ = ["Quaternion", "YPR"]
+__all__ = ["Quaternion", "YPR", "Position"]
 
 # Conditionally import modules
 if platform.system() in ("Linux", "Windows"):
