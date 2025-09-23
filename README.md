@@ -4,6 +4,8 @@ This package provides an interface for interacting with head tracking hardware i
 
 The use of head trackers can greatly enhance the user experience in applications such as immersive audio, virtual reality, gaming, and assistive technologies. By providing precise head position and orientation data, developers can create more immersive and responsive environments for their users. However, interacting with different head trackers and their APIs can be a tedious process. `PyHeadTracker` aims to simplify this process by providing a unified interface for various head tracking devices in python.
 
+A detailed documentation is available [here](https://pyheadtracker.readthedocs.io).
+
 ## Overview
 
 `PyHeadTracker` is designed to provide a simple and consistent interface for accessing head tracking data from various devices. The library abstracts the complexities of dealing with different hardware and APIs, allowing developers to focus on building their applications without worrying about the underlying details.
