@@ -8,10 +8,10 @@ Modules:
 import mido
 import time
 import numpy as np
-from .dtypes import Quaternion, YPR
+from .dtypes import Quaternion, YPR, HTBase
 
 
-class MrHeadTracker:
+class MrHeadTracker(HTBase):
     """
     Class for interacting with the IEM MrHeadTracker.
 

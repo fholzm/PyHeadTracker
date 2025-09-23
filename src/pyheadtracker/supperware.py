@@ -9,10 +9,10 @@ import mido
 import numpy as np
 import time
 from typing import Optional
-from .dtypes import YPR, Quaternion
+from .dtypes import YPR, Quaternion, HTBase
 
 
-class HeadTracker1:
+class HeadTracker1(HTBase):
     """
     Class for interacting with the Supperware Head Tracker 1
 

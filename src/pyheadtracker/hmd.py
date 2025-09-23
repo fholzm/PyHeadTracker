@@ -10,10 +10,10 @@ Classes:
 import xr
 from xr.utils.gl import ContextObject
 from typing import Optional
-from .dtypes import Quaternion, Position
+from .dtypes import Quaternion, Position, HTBase
 
 
-class openXR:
+class openXR(HTBase):
     """
     A class for accessing position and orientation data from OpenXR-compatible HMDs.
 
@@ -170,21 +170,20 @@ class openXR:
 
         return {"position": new_position, "orientation": new_orientation}
 
-    def read_orientation(self, frame_state: xr.FrameState):
+    def read_orientation(self):
         """
         Get the current head orientation as a Quaternion.
-
-        Parameters
-        ----------
-        frame_state : xr.FrameState
-            The current frame state from OpenXR.
 
         Returns
         -------
         Quaternion or None
             The current head orientation as a Quaternion object, or None if the pose is not available.
         """
-        # Get the current time
+        # Get the current frame state from the context if available
+        frame_state = getattr(self.context, "frame_state", None)
+        if frame_state is None:
+            return None
+
         pose = self.read_pose(frame_state)
 
         if pose is not None:
@@ -192,21 +191,20 @@ class openXR:
         else:
             return None
 
-    def read_position(self, frame_state: xr.FrameState):
+    def read_position(self):
         """
         Get the current head position as a Position object.
-
-        Parameters
-        ----------
-        frame_state : xr.FrameState
-            The current frame state from OpenXR.
 
         Returns
         -------
         Position or None
             The current head position as a Position object, or None if the pose is not available.
         """
-        # Get the current time
+        # Get the current frame state from the context if available
+        frame_state = getattr(self.context, "frame_state", None)
+        if frame_state is None:
+            return None
+
         pose = self.read_pose(frame_state)
         if pose is not None:
             return pose["position"]

@@ -1,4 +1,7 @@
 import numpy as np
+from abc import abstractmethod
+import warnings
+from typing import Optional, Union
 
 
 class Quaternion:
@@ -620,4 +623,70 @@ class Position:
 
         return np.sqrt(
             (self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2
+        )
+
+
+class HTBase:
+    """
+    Abstract base class for head tracking devices.
+    """
+
+    @abstractmethod
+    def open(self):
+        """
+        Open a connection to the device.
+        """
+        warnings.warn(
+            "Opening device not implemented or supported on this device, passing.",
+            UserWarning,
+        )
+
+    @abstractmethod
+    def close(self):
+        """
+        Close the connection to the device.
+        """
+        warnings.warn(
+            "Closing device not implemented or supported on this device, passing.",
+            UserWarning,
+        )
+
+    @abstractmethod
+    def read_orientation(self) -> Optional[Union["YPR", "Quaternion", np.ndarray]]:
+        """
+        Read the current orientation of the device.
+
+        Returns
+        -------
+            Quaternion, YPR, or None
+        """
+        warnings.warn(
+            "Reading orientation not implemented or supported on this device, returning None.",
+            UserWarning,
+        )
+        return None
+
+    @abstractmethod
+    def read_position(self) -> Optional["Position"]:
+        """
+        Read the current position of the device.
+
+        Returns
+        -------
+            None or Position
+        """
+        warnings.warn(
+            "Reading position not implemented or supported on this device, returning None.",
+            UserWarning,
+        )
+        return None
+
+    @abstractmethod
+    def zero(self):
+        """
+        Zero the device's orientation to set the current position as the reference.
+        """
+        warnings.warn(
+            "Zeroing not implemented or supported on this device, passing.",
+            UserWarning,
         )

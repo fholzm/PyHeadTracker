@@ -38,8 +38,8 @@ with ContextObject(
                 GL.glClearColor(*eye_colors[view_index])
                 GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-                orientation = ht.read_orientation(frame_state)
-                position = ht.read_position(frame_state)
+                orientation = ht.read_orientation()
+                position = ht.read_position()
 
                 if orientation is not None:
                     w, x, y, z = orientation
