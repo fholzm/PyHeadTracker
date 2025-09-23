@@ -51,9 +51,10 @@ If you are missing a device, feel free to contact us or open an [issue](https://
 
 In future releases, we plan to support additional head tracking devices and improve the overall functionality of the library. Some of the planned features include:
 
-- Support for SteamVR HMDs (e.g. HTC Vive)
-- Dedicated module to send head tracking data over OSC
-- Documentation
+- Support for
+  - SteamVR HMDs (e.g. HTC Vive)
+  - webcam-based head tracking
+  - OptiTrack
 
 ## License
 
