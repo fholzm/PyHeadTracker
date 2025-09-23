@@ -91,7 +91,7 @@ def ypr2quat(ypr: YPR):
         qy = wa * yb * wc - za * wb * xc
         qz = wa * wb * xc + za * yb * wc
 
-    return np.array([qw, qx, qy, qz])
+    return Quaternion(qw, qx, qy, qz)
 
 
 def rad2deg(input_data):
