@@ -44,7 +44,7 @@ In future releases, we plan to support additional head tracking devices and impr
    - SteamVR HMDs (e.g. HTC Vive)
    - webcam-based head tracking
    - OptiTrack
-- Dedicated module to send head tracking data over OSC to common targets and renderers
+- Standalone CLI tool
 
 
 Source Code

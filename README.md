@@ -57,6 +57,7 @@ In future releases, we plan to support additional head tracking devices and impr
   - SteamVR HMDs (e.g. HTC Vive)
   - webcam-based head tracking
   - OptiTrack
+- Standalone CLI tool
 
 ## License
 
