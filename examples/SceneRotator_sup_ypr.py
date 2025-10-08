@@ -1,5 +1,4 @@
 from pyheadtracker import supperware, out, YPR
-from pythonosc.udp_client import SimpleUDPClient
 
 osc_send = out.IEMSceneRotator(ip="127.0.0.1", port=7000)
 
