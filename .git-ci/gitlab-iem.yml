@@ -17,7 +17,7 @@ test:
   stage: test
   allow_failure: false
   before_script:
-    - apt-get update && apt-get install -y xvfb libgl1-mesa-glx libglu1-mesa
+    - apt-get update && apt-get install -y xvfb libgl1 libglx-mesa0 libglu1-mesa
   script:
     - pip install ./dist/*.whl
     - pip install pytest
