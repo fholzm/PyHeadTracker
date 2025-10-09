@@ -16,9 +16,9 @@ test:
   stage: test
   allow_failure: true
   script:
-    - pip install ./dist/*.whl
-    - pip install pytest
-    - pytest
+    - uv pip install ./dist/*.whl
+    - uv pip install pytest
+    - uv pytest
 
 .pypi-base:
   stage: 'deploy'
