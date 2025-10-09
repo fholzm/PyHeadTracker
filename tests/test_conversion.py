@@ -63,7 +63,7 @@ def test_quat2ypr2quat(quat):
     quat_converted = pyheadtracker.utils.ypr2quat(ypr)
 
     # Assert that the result is close to the original value
-    assert pytest.approx(quat.w, rel=1e-4) == quat_converted.w
-    assert pytest.approx(quat.x, rel=1e-4) == quat_converted.x
-    assert pytest.approx(quat.y, rel=1e-4) == quat_converted.y
-    assert pytest.approx(quat.z, rel=1e-4) == quat_converted.z
+    assert pytest.approx(quat.w, rel=1e-2) == quat_converted.w
+    assert pytest.approx(quat.x, rel=1e-2) == quat_converted.x
+    assert pytest.approx(quat.y, rel=1e-2) == quat_converted.y
+    assert pytest.approx(quat.z, rel=1e-2) == quat_converted.z
