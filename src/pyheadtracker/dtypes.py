@@ -260,6 +260,8 @@ class YPR:
             The pitch angle in radians.
         roll : float
             The roll angle in radians.
+        sequence : str, optional
+            The sequence of rotations, either "ypr" (Yaw-Pitch-Roll) or "rpy" (Roll-Pitch-Yaw). Default is "ypr".
         """
         assert sequence in ["ypr", "rpy"], "Sequence must be 'ypr' or 'rpy'"
         assert (
