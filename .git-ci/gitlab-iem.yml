@@ -12,6 +12,14 @@ build:
       - dist/*.whl
       - dist/*.tar.gz
 
+test:
+  stage: test
+  allow_failure: true
+  script:
+    - pip install ./dist/*.whl
+    - pip install pytest
+    - pytest
+
 .pypi-base:
   stage: 'deploy'
   script:
