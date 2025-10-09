@@ -13,13 +13,13 @@ build:
       - dist/*.tar.gz
 
 test:
+  image: python:3.12
   stage: test
   allow_failure: true
   script:
-    - uv venv
-    - uv pip install ./dist/*.whl
-    - uv pip install pytest
-    - uv pytest
+    - pip install ./dist/*.whl
+    - pip install pytest
+    - pytest
 
 .pypi-base:
   stage: 'deploy'
