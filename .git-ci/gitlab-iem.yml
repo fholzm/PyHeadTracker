@@ -16,6 +16,7 @@ test:
   stage: test
   allow_failure: true
   script:
+    - uv venv
     - uv pip install ./dist/*.whl
     - uv pip install pytest
     - uv pytest
