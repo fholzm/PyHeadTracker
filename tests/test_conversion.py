@@ -1,28 +1,29 @@
 import pytest
 import numpy as np
-import pyheadtracker
+from pyheadtracker.dtypes import Quaternion, YPR
+import pyheadtracker.utils
 
 quat_test = [
-    pyheadtracker.Quaternion(1, 0, 0, 0),
-    pyheadtracker.Quaternion(0, 1, 0, 0),
-    pyheadtracker.Quaternion(0, 0, 1, 0),
-    pyheadtracker.Quaternion(0, 0, 0, 1),
-    pyheadtracker.Quaternion(0.7071, 0.7071, 0, 0),
-    pyheadtracker.Quaternion(0.7071, 0, 0.7071, 0),
-    pyheadtracker.Quaternion(0.7071, 0, 0, 0.7071),
-    pyheadtracker.Quaternion(0.5, 0.5, 0.5, 0.5),
+    Quaternion(1, 0, 0, 0),
+    Quaternion(0, 1, 0, 0),
+    Quaternion(0, 0, 1, 0),
+    Quaternion(0, 0, 0, 1),
+    Quaternion(0.7071, 0.7071, 0, 0),
+    Quaternion(0.7071, 0, 0.7071, 0),
+    Quaternion(0.7071, 0, 0, 0.7071),
+    Quaternion(0.5, 0.5, 0.5, 0.5),
 ]
 
 # TODO: Check sequence of ypr angles
 ypr_test = [
-    pyheadtracker.YPR(0, 0, 0),
-    pyheadtracker.YPR(0, 0, np.pi),
-    pyheadtracker.YPR(np.pi, 0, np.pi),
-    pyheadtracker.YPR(np.pi, 0, 0),
-    pyheadtracker.YPR(0, 0, np.pi / 2),
-    pyheadtracker.YPR(0, -np.pi / 2, 0),
-    pyheadtracker.YPR(np.pi / 2, 0, 0),
-    pyheadtracker.YPR(np.pi / 2, 0, np.pi / 2),
+    YPR(0, 0, 0),
+    YPR(0, 0, np.pi),
+    YPR(np.pi, 0, np.pi),
+    YPR(np.pi, 0, 0),
+    YPR(0, 0, np.pi / 2),
+    YPR(0, -np.pi / 2, 0),
+    YPR(np.pi / 2, 0, 0),
+    YPR(np.pi / 2, 0, np.pi / 2),
 ]
 
 
