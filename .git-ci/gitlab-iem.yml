@@ -15,7 +15,9 @@ build:
 test:
   image: python:3.12
   stage: test
-  allow_failure: true
+  allow_failure: false
+  before_script:
+    - apt-get update && apt-get install -y xvfb libgl1-mesa-glx libglu1-mesa
   script:
     - pip install ./dist/*.whl
     - pip install pytest
