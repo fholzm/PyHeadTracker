@@ -74,23 +74,24 @@ def ypr2quat(ypr: YPR):
     """
     assert ypr.sequence in ["ypr", "rpy"], "Sequence must be 'ypr' or 'rpy'"
 
-    wa = np.cos(ypr[0] * 0.5)
-    za = np.sin(ypr[0] * 0.5)
-    wb = np.cos(ypr[1] * 0.5)
-    yb = np.sin(ypr[1] * 0.5)
-    wc = np.cos(ypr[2] * 0.5)
-    xc = np.sin(ypr[2] * 0.5)
+    t0 = np.cos(ypr[0] * 0.5)
+    t1 = np.sin(ypr[0] * 0.5)
+    t2 = np.cos(ypr[2] * 0.5)
+    t3 = np.sin(ypr[2] * 0.5)
+    t4 = np.cos(ypr[1] * 0.5)
+    t5 = np.sin(ypr[1] * 0.5)
 
     if ypr.sequence == "ypr":
-        qw = wc * wb * wa - xc * yb * za
-        qx = wc * yb * za + xc * wb * wa
-        qy = wc * yb * wa - xc * wb * za
-        qz = wc * wb * za + xc * yb * wa
+        qw = t0 * t2 * t4 + t1 * t3 * t5
+        qx = t0 * t3 * t4 - t1 * t2 * t5
+        qy = t0 * t2 * t5 + t1 * t3 * t4
+        qz = t1 * t2 * t4 - t0 * t3 * t5
+
     else:  # sequence == "rpy"
-        qw = wa * wb * wc - za * yb * xc
-        qx = za * wb * wc + wa * yb * xc
-        qy = wa * yb * wc - za * wb * xc
-        qz = wa * wb * xc + za * yb * wc
+        qw = t0 * t2 * t4 - t1 * t3 * t5
+        qx = t1 * t2 * t4 + t0 * t3 * t5
+        qy = t0 * t3 * t4 - t1 * t2 * t5
+        qz = t0 * t2 * t5 + t1 * t3 * t4
 
     return Quaternion(qw, qx, qy, qz)
 
