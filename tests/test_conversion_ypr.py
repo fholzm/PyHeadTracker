@@ -33,7 +33,7 @@ ypr_test = [
     list(zip(quat_test, ypr_test)),
 )
 def test_quat2ypr(quat, ypr):
-    ypr_converted = pyheadtracker.utils.quat2ypr(quat)
+    ypr_converted = pyheadtracker.utils.quat2ypr(quat, sequence="ypr")
 
     # Assert that the result is close to the expected value
     assert pytest.approx(ypr[0], abs=tolerance) == ypr_converted[0]
@@ -83,7 +83,7 @@ def test_ypr2quat(quat, ypr):
     quat_test,
 )
 def test_quat2ypr2quat(quat):
-    ypr = pyheadtracker.utils.quat2ypr(quat)
+    ypr = pyheadtracker.utils.quat2ypr(quat, sequence="ypr")
     quat_converted = pyheadtracker.utils.ypr2quat(ypr)
 
     # Wrap values close to 1 or -1 to avoid issues with sign ambiguity

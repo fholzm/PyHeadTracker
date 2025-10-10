@@ -16,7 +16,7 @@ import numpy as np
 from .dtypes import Quaternion, YPR
 
 
-def quat2ypr(quat: Quaternion, sequence: str = "ypr"):
+def quat2ypr(quat: Quaternion, sequence: str = "ypr", extrinsic: bool = False) -> YPR:
     """
     Convert a Quaternion to an YPR (yaw, pitch, roll) object.
 
@@ -27,35 +27,65 @@ def quat2ypr(quat: Quaternion, sequence: str = "ypr"):
     sequence : str, optional
         The sequence of angles, either "ypr" (Yaw, Pitch, Roll) or "rpy" (Roll, Pitch, Yaw).
         Default is "ypr".
+    extrinsic : bool, optional
+        If True, use extrinsic rotations (rotations about the fixed axes). If False, use intrinsic rotations (rotations about the moving axes).
+        Default is False.
 
     Returns
     -------
     YPR
         An YPR object containing the converted angles in radians.
+
+    References
+    ----------
+    [1] E. Bernardes, “OrigaBot: Origami-based Reconfigurable Robots for Multi-modal Locomotion,” phdthesis, Aix-Marseille University, 2023. Accessed: Oct. 10, 2025. [Online]. Available: https://theses.hal.science/tel-04646218
     """
     assert sequence in ["ypr", "rpy"], "Sequence must be 'ypr' or 'rpy'"
 
-    e = -1 if sequence == "ypr" else 1
+    if extrinsic:
+        sequence = sequence[::-1]  # Reverse for intrinsic rotations
 
-    qw, qx, xy, qz = quat
-
-    t0 = np.clip(2 * (qw * xy + e * qz * qx), -1.0, 1.0)
-    pitch = np.arcsin(t0)
-
-    if np.abs(pitch == np.pi):
-        roll = 0
-        yaw = np.arctan(qz, qw)
+    if sequence == "ypr":
+        i = int(3)
+        j = int(2)
+        k = int(1)
+    elif sequence == "rpy":
+        i = int(1)
+        j = int(2)
+        k = int(3)
     else:
-        t0 = 2.0 * (qw * qz - e * xy * qx)
-        t1 = 1.0 - 2.0 * (qz * qz + xy * xy)
+        raise ValueError("Sequence must be 'ypr' or 'rpy'")
 
-        yaw = np.arctan2(t0, t1)
+    e = int((-i + j) * (-j + k) * (-k + i) / 2)
 
-        t0 = 2.0 * (qw * qx - e * qz * xy)
-        t1 = 1.0 - 2.0 * (xy * xy + qx * qx)
-        roll = np.arctan2(t0, t1)
+    a = quat[0] - quat[j]
+    b = quat[i] + quat[k] * e
+    c = quat[j] + quat[0]
+    d = quat[k] * e - quat[i]
 
-    return YPR(yaw, pitch, roll, sequence)
+    theta2 = 2 * np.atan2(np.sqrt(c**2 + d**2), np.sqrt(a**2 + b**2))
+    theta_plus = np.atan2(b, a)
+    theta_minus = np.atan2(d, c)
+
+    if np.abs(theta2) < 1e-6:
+        theta1 = 0
+        theta3 = 2 * theta_plus
+    elif np.abs(theta2 - np.pi) < 1e-6:
+        theta1 = 0
+        theta3 = 2 * theta_minus
+    else:
+        theta1 = theta_plus - theta_minus
+        theta3 = theta_plus + theta_minus
+
+    theta3 *= e
+    theta2 -= np.pi / 2
+
+    # Wrap angles to the range [-pi, pi]
+    theta1 = np.atan2(np.sin(theta1), np.cos(theta1))
+    theta2 = np.atan2(np.sin(theta2), np.cos(theta2))
+    theta3 = np.atan2(np.sin(theta3), np.cos(theta3))
+
+    return YPR(theta1, theta2, theta3, sequence)
 
 
 def ypr2quat(ypr: YPR):
