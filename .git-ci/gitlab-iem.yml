@@ -1,4 +1,4 @@
-image: astral/uv:alpine
+image: astral/uv:trixie-slim
 
 variables:
   GIT_DEPTH: 0
@@ -13,15 +13,15 @@ build:
       - dist/*.tar.gz
 
 test:
-  image: python:3.12
   stage: test
   allow_failure: false
   before_script:
     - apt-get update && apt-get install -y xvfb libgl1 libglx-mesa0 libglu1-mesa
   script:
-    - pip install ./dist/*.whl
-    - pip install pytest
-    - pytest
+    - uv venv
+    - uv pip install ./dist/*.whl
+    - uv pip install pytest
+    - uv pytest
 
 .pypi-base:
   stage: 'deploy'
