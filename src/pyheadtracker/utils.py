@@ -35,11 +35,12 @@ def quat2ypr(quat: Quaternion, sequence: str = "ypr"):
     """
     assert sequence in ["ypr", "rpy"], "Sequence must be 'ypr' or 'rpy'"
 
-    e = 1 if sequence == "ypr" else -1
+    e = -1 if sequence == "ypr" else 1
 
     qw, qx, xy, qz = quat
 
-    pitch = np.arcsin(2 * (qw * xy + e * qz * qx))
+    t0 = np.clip(2 * (qw * xy + e * qz * qx), -1.0, 1.0)
+    pitch = np.arcsin(t0)
 
     if np.abs(pitch == np.pi):
         roll = 0
