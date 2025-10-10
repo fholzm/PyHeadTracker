@@ -17,14 +17,14 @@ quat_test = [
 ]
 
 ypr_test = [
-    YPR(0, 0, 0, sequence="ypr"),
-    YPR(0, 0, np.pi, sequence="ypr"),
-    YPR(np.pi, 0, np.pi, sequence="ypr"),
-    YPR(np.pi, 0, 0, sequence="ypr"),
-    YPR(0, 0, np.pi / 2, sequence="ypr"),
-    YPR(0, np.pi / 2, 0, sequence="ypr"),
-    YPR(np.pi / 2, 0, 0, sequence="ypr"),
-    YPR(np.pi / 2, 0, np.pi / 2, sequence="ypr"),
+    YPR(0, 0, 0, sequence="rpy"),
+    YPR(-np.pi, 0, 0, sequence="rpy"),
+    YPR(-np.pi, 0, -np.pi, sequence="rpy"),
+    YPR(0, 0, -np.pi, sequence="rpy"),
+    YPR(np.pi / 2, 0, 0, sequence="rpy"),
+    YPR(0, np.pi / 2, 0, sequence="rpy"),
+    YPR(0, 0, np.pi / 2, sequence="rpy"),
+    YPR(np.pi / 2, np.pi / 2, 0, sequence="rpy"),
 ]
 
 
