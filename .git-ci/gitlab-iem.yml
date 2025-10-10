@@ -21,7 +21,7 @@ test:
     - uv venv
     - uv pip install ./dist/*.whl
     - uv pip install pytest
-    - uv pytest
+    - uv run pytest
 
 .pypi-base:
   stage: 'deploy'
