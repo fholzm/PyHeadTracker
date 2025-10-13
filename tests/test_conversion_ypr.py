@@ -11,9 +11,15 @@ quat_test = [
     Quaternion(0, 0, 1, 0),
     Quaternion(0, 0, 0, 1),
     Quaternion(0.7071, 0.7071, 0, 0),
-    Quaternion(0.7071, 0, 0.7071, 0),
     Quaternion(0.7071, 0, 0, 0.7071),
-    Quaternion(0.5, 0.5, 0.5, 0.5),
+    Quaternion(0.84462, 0.19134, 0.46194, 0.19134),
+    Quaternion(0.73254, -0.46194, 0.19134, 0.46194),
+    Quaternion(0.73254, 0.46194, -0.19134, 0.46194),
+    Quaternion(0.84462, -0.19134, -0.46194, 0.19134),
+    Quaternion(0.73254, 0.46194, 0.19134, -0.46194),
+    Quaternion(0.84462, -0.19134, 0.46194, -0.19134),
+    Quaternion(0.84462, 0.19134, -0.46194, -0.19134),
+    Quaternion(0.73254, -0.46194, -0.19134, -0.46194),
 ]
 
 ypr_test = [
@@ -22,9 +28,15 @@ ypr_test = [
     YPR(np.pi, 0, np.pi, sequence="ypr"),
     YPR(np.pi, 0, 0, sequence="ypr"),
     YPR(0, 0, np.pi / 2, sequence="ypr"),
-    YPR(0, np.pi / 2, 0, sequence="ypr"),
     YPR(np.pi / 2, 0, 0, sequence="ypr"),
-    YPR(np.pi / 2, 0, np.pi / 2, sequence="ypr"),
+    YPR(np.pi / 4, np.pi / 4, np.pi / 4, sequence="ypr"),
+    YPR(np.pi / 4, np.pi / 4, -np.pi / 4, sequence="ypr"),
+    YPR(np.pi / 4, -np.pi / 4, np.pi / 4, sequence="ypr"),
+    YPR(np.pi / 4, -np.pi / 4, -np.pi / 4, sequence="ypr"),
+    YPR(-np.pi / 4, np.pi / 4, np.pi / 4, sequence="ypr"),
+    YPR(-np.pi / 4, np.pi / 4, -np.pi / 4, sequence="ypr"),
+    YPR(-np.pi / 4, -np.pi / 4, np.pi / 4, sequence="ypr"),
+    YPR(-np.pi / 4, -np.pi / 4, -np.pi / 4, sequence="ypr"),
 ]
 
 

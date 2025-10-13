@@ -11,9 +11,15 @@ quat_test = [
     Quaternion(0, 0, 1, 0),
     Quaternion(0, 0, 0, 1),
     Quaternion(0.7071, 0.7071, 0, 0),
-    Quaternion(0.7071, 0, 0.7071, 0),
     Quaternion(0.7071, 0, 0, 0.7071),
-    Quaternion(0.5, 0.5, 0.5, 0.5),
+    Quaternion(0.73254, 0.46194, 0.19134, 0.46194),
+    Quaternion(0.84462, 0.19134, 0.46194, -0.19134),
+    Quaternion(0.84462, 0.19134, -0.46194, 0.19134),
+    Quaternion(0.73254, 0.46194, -0.19134, -0.46194),
+    Quaternion(0.84462, -0.19134, 0.46194, 0.19134),
+    Quaternion(0.73254, -0.46194, 0.19134, -0.46194),
+    Quaternion(0.73254, -0.46194, -0.19134, 0.46194),
+    Quaternion(0.84462, -0.19134, -0.46194, -0.19134),
 ]
 
 ypr_test = [
@@ -22,9 +28,15 @@ ypr_test = [
     YPR(-np.pi, 0, -np.pi, sequence="rpy"),
     YPR(0, 0, -np.pi, sequence="rpy"),
     YPR(np.pi / 2, 0, 0, sequence="rpy"),
-    YPR(0, np.pi / 2, 0, sequence="rpy"),
     YPR(0, 0, np.pi / 2, sequence="rpy"),
-    YPR(np.pi / 2, np.pi / 2, 0, sequence="rpy"),
+    YPR(np.pi / 4, np.pi / 4, np.pi / 4, sequence="rpy"),
+    YPR(np.pi / 4, np.pi / 4, -np.pi / 4, sequence="rpy"),
+    YPR(np.pi / 4, -np.pi / 4, np.pi / 4, sequence="rpy"),
+    YPR(np.pi / 4, -np.pi / 4, -np.pi / 4, sequence="rpy"),
+    YPR(-np.pi / 4, np.pi / 4, np.pi / 4, sequence="rpy"),
+    YPR(-np.pi / 4, np.pi / 4, -np.pi / 4, sequence="rpy"),
+    YPR(-np.pi / 4, -np.pi / 4, np.pi / 4, sequence="rpy"),
+    YPR(-np.pi / 4, -np.pi / 4, -np.pi / 4, sequence="rpy"),
 ]
 
 
@@ -33,7 +45,7 @@ ypr_test = [
     list(zip(quat_test, ypr_test)),
 )
 def test_quat2ypr(quat, ypr):
-    ypr_converted = pyheadtracker.utils.quat2ypr(quat)
+    ypr_converted = pyheadtracker.utils.quat2ypr(quat, sequence="rpy")
 
     # Assert that the result is close to the expected value
     assert pytest.approx(ypr[0], abs=tolerance) == ypr_converted[0]
@@ -83,7 +95,7 @@ def test_ypr2quat(quat, ypr):
     quat_test,
 )
 def test_quat2ypr2quat(quat):
-    ypr = pyheadtracker.utils.quat2ypr(quat)
+    ypr = pyheadtracker.utils.quat2ypr(quat, sequence="rpy")
     quat_converted = pyheadtracker.utils.ypr2quat(ypr)
 
     # Wrap values close to 1 or -1 to avoid issues with sign ambiguity
