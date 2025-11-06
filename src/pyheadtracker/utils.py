@@ -56,7 +56,7 @@ def quat2ypr(quat: Quaternion, sequence: str = "ypr", extrinsic: bool = False) -
     else:
         raise ValueError("Sequence must be 'ypr' or 'rpy'")
 
-    e = int((-i + j) * (-j + k) * (-k + i) / 2)
+    e = 1 if sequence == "ypr" else -1
 
     a = quat[0] - quat[j]
     b = quat[i] + quat[k] * e
@@ -120,7 +120,7 @@ def ypr2quat(ypr: YPR):
     else:  # sequence == "rpy"
         qw = t0 * t2 * t4 - t1 * t3 * t5
         qx = t1 * t2 * t4 + t0 * t3 * t5
-        qy = t0 * t3 * t4 - t1 * t2 * t5
+        qy = t0 * t2 * t5 - t1 * t3 * t4
         qz = t0 * t2 * t5 + t1 * t3 * t4
 
     return Quaternion(qw, qx, qy, qz)
