@@ -100,15 +100,13 @@ class IEMSceneRotator(OutBase):
         orientation : YPR | Quaternion
             The orientation data to send.
         """
+
+        if isinstance(orientation, YPR):
+            orientation = ypr2quat(orientation)
+
         if isinstance(orientation, Quaternion):
             w, x, y, z = orientation
             self.client.send_message(self.OSC_address + "quaternions", [w, -y, x, -z])
-
-        elif isinstance(orientation, YPR):
-            y, p, r = orientation.to_degrees()
-            self.client.send_message(self.OSC_address + "yaw", -y)
-            self.client.send_message(self.OSC_address + "pitch", p)
-            self.client.send_message(self.OSC_address + "roll", -r)
         else:
             return
 
