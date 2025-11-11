@@ -51,7 +51,12 @@ class MrHeadTracker(HTBase):
     [1] https://git.iem.at/DIY/MrHeadTracker
     """
 
-    def __init__(self, device_name: str = "MrHeadTracker", orient_format: str = "q"):
+    def __init__(
+        self,
+        device_name: str = "MrHeadTracker",
+        orient_format: str = "q",
+        inverse: bool = False,
+    ):
         """
         Parameters
         ----------
@@ -59,6 +64,8 @@ class MrHeadTracker(HTBase):
             The name of the MIDI device to connect to. Default is "MrHeadTracker".
         orient_format : str
             The format for orientation data. Must correspond to the hardware settings if using the first version. Later versions only send quaternions. Possible values are "q" (Quaternion) or "ypr" (Yaw, Pitch, Roll). Default is "q".
+        inverse : bool
+            If inverse tracking data is provided by the head tracker. This mode could be set in the first version of the MrHeadTracker hardware. Default is False.
 
         Raises
         ------
@@ -67,6 +74,7 @@ class MrHeadTracker(HTBase):
         """
 
         self.device_name = device_name
+        self.inverse = inverse
 
         # Set orient format
         assert orient_format in ["q", "ypr"], "Orientation format must be 'q' or 'ypr'"
@@ -201,7 +209,10 @@ class MrHeadTracker(HTBase):
         ) - 1
 
         if self.orient_format == "ypr":
-            out = YPR(w * np.pi, x * np.pi, y * np.pi, "ypr")
+            if self.inverse:
+                out = YPR(-w * np.pi, -x * np.pi, y * np.pi, "ypr")
+            else:
+                out = YPR(w * np.pi, x * np.pi, -y * np.pi, "ypr")
 
         else:
             z = (
@@ -211,7 +222,11 @@ class MrHeadTracker(HTBase):
                 )
                 / 8192.0
             ) - 1
-            out = Quaternion(w, x, y, z)
+            out = (
+                Quaternion(w, -x, y, z).inverse()
+                if self.inverse
+                else Quaternion(w, -x, y, z)
+            )
 
         # Reset the bytes for the next message
         for key in self.orientation_bytes:
