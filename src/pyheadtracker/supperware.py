@@ -396,11 +396,11 @@ class HeadTracker1(HTBase):
         for msg in self.inport:
             # Check if it's orientation data
             if msg.data[3] == 64:
-                q1 = self.__convert_14bit(msg.data[5], msg.data[6])
-                q2 = self.__convert_14bit(msg.data[7], msg.data[8])
-                q3 = self.__convert_14bit(msg.data[9], msg.data[10])
-                q4 = self.__convert_14bit(msg.data[11], msg.data[12])
-                return Quaternion(q1, q2, q3, q4)
+                qw = self.__convert_14bit(msg.data[5], msg.data[6])
+                qy = self.__convert_14bit(msg.data[7], msg.data[8])
+                qx = self.__convert_14bit(msg.data[9], msg.data[10])
+                qz = self.__convert_14bit(msg.data[11], msg.data[12])
+                return Quaternion(qw, qx, qy, qz)
 
     def __read_orientation_orth(self):
         """Read orientation data in orthogonal matrix format from the MIDI device.
