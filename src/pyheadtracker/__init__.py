@@ -25,6 +25,7 @@ else:
 
 from . import supperware
 from . import diy
+from . import cam
 from . import utils
 from . import out
 
