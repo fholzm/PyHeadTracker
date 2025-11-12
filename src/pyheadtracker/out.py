@@ -105,8 +105,8 @@ class IEMSceneRotator(OutBase):
             orientation = ypr2quat(orientation)
 
         if isinstance(orientation, Quaternion):
-            w, x, y, z = orientation
-            self.client.send_message(self.OSC_address + "quaternions", [w, -y, x, -z])
+            w, x, y, z = orientation.inverse()
+            self.client.send_message(self.OSC_address + "quaternions", [w, x, y, z])
         else:
             return
 
@@ -209,7 +209,6 @@ class IEMDirectivityShaper(OutBase):
         if isinstance(orientation, Quaternion):
             orientation = quat2ypr(orientation)
 
-        # TODO: Check for correct sign and range of angles
         y, p, r = orientation.to_degrees()
 
         y += self.offset_az
@@ -224,7 +223,7 @@ class IEMDirectivityShaper(OutBase):
             r = -r
 
         self.client.send_message(self.OSC_address + "probeAzimuth", y)
-        self.client.send_message(self.OSC_address + "probeElevation", p)
+        self.client.send_message(self.OSC_address + "probeElevation", -p)
         self.client.send_message(self.OSC_address + "probeRoll", r)
 
 
