@@ -347,9 +347,9 @@ class IEMDirectivityShaper(OutBase):
 
 
 class SPARTA(OutBase):
-    """Class for sending head tracking data to SPARTA AmbiBin via OSC.
+    """Class for sending head tracking data to SPARTA Plug-Ins via OSC.
 
-    This class is used to transmit data via OSC to the SPARTA AmbiBin application [1]. It supports sending orientation data in both YPR (Yaw, Pitch, Roll) and Quaternion formats. If Quaternion data is provided, it is automatically converted to YPR format before transmission.
+    This class is used to transmit data via OSC to the SPARTA applications [1]. It supports sending orientation data in both YPR (Yaw, Pitch, Roll) and Quaternion formats. If Quaternion data is provided, it is automatically converted to YPR format before transmission.
 
     Attributes
     ----------
@@ -369,6 +369,16 @@ class SPARTA(OutBase):
         If True, invert the elevation (pitch) angle. Default is False.
     invert_roll : bool
         If True, invert the roll angle. Default is False.
+
+    Methods
+    -------
+    send_orientation(orientation: YPR | Quaternion | None)
+        Send orientation data to SPARTA Plug-Ins.
+
+    References
+    ----------
+    [1] https://leomccormack.github.io/sparta-site/
+
     """
 
     def __init__(
@@ -413,7 +423,7 @@ class SPARTA(OutBase):
         self.invert_roll = invert_roll
 
     def send_orientation(self, orientation: YPR | Quaternion | None):
-        """Send orientation data to the IEM Scene Rotator.
+        """Send orientation data to SPARTA Plug-Ins.
 
         Parameters
         ----------
@@ -442,5 +452,133 @@ class SPARTA(OutBase):
         self.client.send_message("/ypr", [y, p, r])
 
 
-# TODO: Implement TASCAR
+class TASCAR(OutBase):
+    """Class for sending head tracking data to TASCAR.
+
+    This class is used to transmit data via OSC to TASCAR [1]. It supports sending orientation data in both YPR (Yaw, Pitch, Roll) and Quaternion formats. If Quaternion data is provided, it is automatically converted to YPR format before transmission.
+
+    Attributes
+    ----------
+    OSC_address : str
+        The OSC address prefix for sending messages, without tailing pos or zyxeuler.
+    ip : str
+        The IP address of the target application. Default is "127.0.0.1".
+    port : int
+        The port number of the target application. Default is 9000.
+    offset_az : float
+        Offset in degrees to be added to the azimuth (yaw) angle. Default is 0.0.
+    offset_el : float
+        Offset in degrees to be added to the elevation (pitch) angle. Default is 0.0.
+    offset_roll : float
+        Offset in degrees to be added to the roll angle. Default is 0.0.
+    invert_az : bool
+        If True, invert the azimuth (yaw) angle. Default is False.
+    invert_el : bool
+        If True, invert the elevation (pitch) angle. Default is False.
+    invert_roll : bool
+        If True, invert the roll angle. Default is False.
+
+    Methods
+    -------
+    send_orientation(orientation: YPR | Quaternion | None)
+        Send orientation data to TASCAR.
+    send_position(position: Position)
+        Send position data to TASCAR.
+
+    References
+    ----------
+    [1] https://tascar.org/
+    """
+
+    def __init__(
+        self,
+        OSC_address: str,
+        ip: str = "127.0.0.1",
+        port: int = 9000,
+        offset_az: float = 0.0,
+        offset_el: float = 0.0,
+        offset_roll: float = 0.0,
+        invert_az: bool = False,
+        invert_el: bool = False,
+        invert_roll: bool = False,
+    ):
+        """
+        Parameters
+        ----------
+        OSC_address : str
+            The OSC address prefix for sending messages, without tailing pos or zyxeuler.
+        ip : str
+            The IP address of the target application. Default is "127.0.0.1".
+        port : int
+            The port number of the target application. Default is 9000.
+        offset_az : float
+            Offset in degrees to be added to the azimuth (yaw) angle. Default is 0.0.
+        offset_el : float
+            Offset in degrees to be added to the elevation (pitch) angle. Default is 0.0.
+        offset_roll : float
+            Offset in degrees to be added to the roll angle. Default is 0.0.
+        invert_az : bool
+            If True, invert the azimuth (yaw) angle. Default is False.
+        invert_el : bool
+            If True, invert the elevation (pitch) angle. Default is False.
+        invert_roll : bool
+            If True, invert the roll angle. Default is False.
+        """
+        self.OSC_address_position = OSC_address.rstrip("/") + "/pos"
+        self.OSC_address_orientation = OSC_address.rstrip("/") + "/zyxeuler"
+        self.ip = ip
+        self.port = port
+        self.client = SimpleUDPClient(self.ip, self.port)
+        self.offset_az = offset_az
+        self.offset_el = offset_el
+        self.offset_roll = offset_roll
+        self.invert_az = invert_az
+        self.invert_el = invert_el
+        self.invert_roll = invert_roll
+
+    def send_orientation(self, orientation: YPR | Quaternion | None):
+        """Send orientation data to TASCAR.
+
+        Parameters
+        ----------
+        orientation : YPR | Quaternion
+            The orientation data to send.
+        """
+        if not isinstance(orientation, (YPR, Quaternion)):
+            return
+
+        if isinstance(orientation, Quaternion):
+            orientation = quat2ypr(orientation)
+
+        y, p, r = orientation.to_degrees()
+
+        y += self.offset_az
+        p += self.offset_el
+        r += self.offset_roll
+
+        if self.invert_az:
+            y = -y
+        if self.invert_el:
+            p = -p
+        if self.invert_roll:
+            r = -r
+
+        self.client.send_message(self.OSC_address_orientation, [y, p, r])
+
+    def send_position(self, position: Position):
+        """Send position data to TASCAR.
+
+        Parameters
+        ----------
+        position : Position
+            The position data to send.
+        """
+        if not isinstance(position, Position):
+            return
+
+        x, y, z = position
+
+        self.client.send_message(self.OSC_address_position, [x, y, z])
+
+
 # TODO: Implement generic OSC sender class?

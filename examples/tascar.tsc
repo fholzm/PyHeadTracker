@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<session license="MIT" srv_port="9877" attribution="Felix Holzmüller">
+    <scene name="demo" guiscale="6">
+        <source name="in">
+            <position>0 2.0 0 0</position>
+            <sound>
+                <plugins>
+                    <pink alpha="1" fmax="20000" level="60"/>
+                </plugins>
+            </sound>
+        </source>
+
+        <receiver name="out" type="hrtf">
+            <position>0 0 0 0</position>
+            <orientation>0 0 00 0</orientation>
+        </receiver>
+    </scene>
+
+  <connect src="render.demo:out_l" dest="system:playback_1"/>
+  <connect src="render.demo:out_r" dest="system:playback_2"/>
+</session>
