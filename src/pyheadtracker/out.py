@@ -48,7 +48,7 @@ class OutBase:
 
 
 class IEMSceneRotator(OutBase):
-    """Class for sending head tracking data to IEM Scene Rotator via OSC.
+    """Class for sending head tracking data to IEM SceneRotator via OSC.
 
     This class is used to transmit data via OSC to the IEM SceneRotator of the IEM Plug-In Suite [1]. It supports sending orientation data in both YPR (Yaw, Pitch, Roll) and Quaternion formats. If YPR data is provided, it is automatically converted to Quaternion format before transmission.
 
@@ -64,7 +64,7 @@ class IEMSceneRotator(OutBase):
     Methods
     -------
     send_orientation(orientation: YPR | Quaternion | None)
-        Send orientation data to the IEM Scene Rotator.
+        Send orientation data to the IEM SceneRotator.
 
     References
     ----------
@@ -93,7 +93,7 @@ class IEMSceneRotator(OutBase):
         self.client = SimpleUDPClient(self.ip, self.port)
 
     def send_orientation(self, orientation: YPR | Quaternion | None):
-        """Send orientation data to the IEM Scene Rotator.
+        """Send orientation data to the IEM SceneRotator.
 
         Parameters
         ----------
@@ -111,10 +111,10 @@ class IEMSceneRotator(OutBase):
             return
 
 
-class IEMDirectivityShaper(OutBase):
-    """Class for sending head tracking data to IEM Directivity Shaper via OSC.
+class IEMStereoEncoder(OutBase):
+    """Class for sending head tracking data to IEM StereoEncoder via OSC.
 
-    This class is used to transmit data via OSC to the IEM Directivity Shaper of the IEM Plug-In Suite [1]. It supports sending orientation data in both YPR (Yaw, Pitch, Roll) and Quaternion formats. If Quaternion data is provided, it is automatically converted to YPR format before transmission.
+    This class is used to transmit data via OSC to the IEM StereoEncoder of the IEM Plug-In Suite [1]. It supports sending orientation data in both YPR (Yaw, Pitch, Roll) and Quaternion formats. If Quaternion data is provided, it is automatically converted to YPR format before transmission.
 
     Attributes
     ----------
@@ -140,7 +140,7 @@ class IEMDirectivityShaper(OutBase):
     Methods
     -------
     send_orientation(orientation: YPR | Quaternion | None)
-        Send orientation data to the IEM Directivity Shaper.
+        Send orientation data to the IEM StereoEncoder.
 
     References
     ----------
@@ -151,7 +151,7 @@ class IEMDirectivityShaper(OutBase):
         self,
         ip: str = "127.0.0.1",
         port: int = 8000,
-        OSC_address: str = "/DirectivityShaper/",
+        OSC_address: str = "/StereoEncoder/",
         offset_az: float = 0.0,
         offset_el: float = 0.0,
         offset_roll: float = 0.0,
@@ -167,7 +167,7 @@ class IEMDirectivityShaper(OutBase):
         port : int
             The port number of the target application. Default is 8000.
         OSC_address : str
-            The OSC address prefix for sending messages. Default is "/SceneRotator/".
+            The OSC address prefix for sending messages. Default is "/StereoEncoder/".
         offset_az : float
             Offset in degrees to be added to the azimuth (yaw) angle. Default is 0.0.
         offset_el : float
@@ -196,7 +196,123 @@ class IEMDirectivityShaper(OutBase):
         self.client.send_message(self.OSC_address + "probeLock", 1.0)
 
     def send_orientation(self, orientation: YPR | Quaternion | None):
-        """Send orientation data to the IEM Scene Rotator.
+        """Send orientation data to the IEM StereoEncoder.
+
+        Parameters
+        ----------
+        orientation : YPR | Quaternion
+            The orientation data to send.
+        """
+        if not isinstance(orientation, (YPR, Quaternion)):
+            return
+
+        if isinstance(orientation, Quaternion):
+            orientation = quat2ypr(orientation)
+
+        y, p, r = orientation.to_degrees()
+
+        y += self.offset_az
+        p += self.offset_el
+        r += self.offset_roll
+
+        if self.invert_az:
+            y = -y
+        if self.invert_el:
+            p = -p
+        if self.invert_roll:
+            r = -r
+
+        self.client.send_message(self.OSC_address + "azimuth", y)
+        self.client.send_message(self.OSC_address + "elevation", -p)
+        self.client.send_message(self.OSC_address + "roll", r)
+
+
+class IEMDirectivityShaper(OutBase):
+    """Class for sending head tracking data to IEM DirectivityShaper via OSC.
+
+    This class is used to transmit data via OSC to the IEM DirectivityShaper of the IEM Plug-In Suite [1]. It supports sending orientation data in both YPR (Yaw, Pitch, Roll) and Quaternion formats. If Quaternion data is provided, it is automatically converted to YPR format before transmission.
+
+    Attributes
+    ----------
+    ip : str
+        The IP address of the target application. Default is "127.0.0.1".
+    port : int
+        The port number of the target application. Default is 8000.
+    OSC_address : str
+        The OSC address prefix for sending messages. Default is "/DirectivityShaper/".
+    offset_az : float
+        Offset in degrees to be added to the azimuth (yaw) angle. Default is 0.0.
+    offset_el : float
+        Offset in degrees to be added to the elevation (pitch) angle. Default is 0.0.
+    offset_roll : float
+        Offset in degrees to be added to the roll angle. Default is 0.0.
+    invert_az : bool
+        If True, invert the azimuth (yaw) angle. Default is False.
+    invert_el : bool
+        If True, invert the elevation (pitch) angle. Default is False.
+    invert_roll : bool
+        If True, invert the roll angle. Default is False.
+
+    Methods
+    -------
+    send_orientation(orientation: YPR | Quaternion | None)
+        Send orientation data to the IEM DirectivityShaper.
+
+    References
+    ----------
+    [1] https://plugins.iem.at
+    """
+
+    def __init__(
+        self,
+        ip: str = "127.0.0.1",
+        port: int = 8000,
+        OSC_address: str = "/DirectivityShaper/",
+        offset_az: float = 0.0,
+        offset_el: float = 0.0,
+        offset_roll: float = 0.0,
+        invert_az: bool = False,
+        invert_el: bool = False,
+        invert_roll: bool = False,
+    ):
+        """
+        Parameters
+        ----------
+        ip : str
+            The IP address of the target application. Default is "127.0.0.1".
+        port : int
+            The port number of the target application. Default is 8000.
+        OSC_address : str
+            The OSC address prefix for sending messages. Default is "/DirectivityShaper/".
+        offset_az : float
+            Offset in degrees to be added to the azimuth (yaw) angle. Default is 0.0.
+        offset_el : float
+            Offset in degrees to be added to the elevation (pitch) angle. Default is 0.0.
+        offset_roll : float
+            Offset in degrees to be added to the roll angle. Default is 0.0.
+        invert_az : bool
+            If True, invert the azimuth (yaw) angle. Default is False.
+        invert_el : bool
+            If True, invert the elevation (pitch) angle. Default is False.
+        invert_roll : bool
+            If True, invert the roll angle. Default is False.
+        """
+        self.ip = ip
+        self.port = port
+        self.OSC_address = OSC_address
+        self.client = SimpleUDPClient(self.ip, self.port)
+        self.offset_az = offset_az
+        self.offset_el = offset_el
+        self.offset_roll = offset_roll
+        self.invert_az = invert_az
+        self.invert_el = invert_el
+        self.invert_roll = invert_roll
+
+        # Engage probe lock
+        self.client.send_message(self.OSC_address + "probeLock", 1.0)
+
+    def send_orientation(self, orientation: YPR | Quaternion | None):
+        """Send orientation data to the IEM DirectivityShaper.
 
         Parameters
         ----------
@@ -310,7 +426,6 @@ class SPARTA(OutBase):
         if isinstance(orientation, Quaternion):
             orientation = quat2ypr(orientation)
 
-        # TODO: Check for correct sign and range of angles
         y, p, r = orientation.to_degrees()
 
         y += self.offset_az
