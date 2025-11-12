@@ -378,7 +378,7 @@ class HeadTracker1(HTBase):
             # Check if it's orientation data
             if msg.data[3] == 64:
                 yaw = self.__convert_14bit(msg.data[5], msg.data[6])
-                pitch = self.__convert_14bit(msg.data[7], msg.data[8])
+                pitch = -self.__convert_14bit(msg.data[7], msg.data[8])
                 roll = self.__convert_14bit(msg.data[9], msg.data[10])
                 return YPR(yaw, pitch, roll, "ypr")
 
@@ -397,7 +397,7 @@ class HeadTracker1(HTBase):
             # Check if it's orientation data
             if msg.data[3] == 64:
                 qw = self.__convert_14bit(msg.data[5], msg.data[6])
-                qy = self.__convert_14bit(msg.data[7], msg.data[8])
+                qy = -self.__convert_14bit(msg.data[7], msg.data[8])
                 qx = self.__convert_14bit(msg.data[9], msg.data[10])
                 qz = self.__convert_14bit(msg.data[11], msg.data[12])
                 return Quaternion(qw, qx, qy, qz)

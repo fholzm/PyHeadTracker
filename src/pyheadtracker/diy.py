@@ -210,9 +210,9 @@ class MrHeadTracker(HTBase):
 
         if self.orient_format == "ypr":
             if self.inverse:
-                out = YPR(-w * np.pi, -x * np.pi, y * np.pi, "ypr")
+                out = YPR(-w * np.pi, x * np.pi, y * np.pi, "ypr")
             else:
-                out = YPR(w * np.pi, x * np.pi, -y * np.pi, "ypr")
+                out = YPR(w * np.pi, -x * np.pi, -y * np.pi, "ypr")
 
         else:
             z = (
@@ -223,9 +223,9 @@ class MrHeadTracker(HTBase):
                 / 8192.0
             ) - 1
             out = (
-                Quaternion(w, -x, y, z).inverse()
+                Quaternion(w, -x, -y, z).inverse()
                 if self.inverse
-                else Quaternion(w, -x, y, z)
+                else Quaternion(w, -x, -y, z)
             )
 
         # Reset the bytes for the next message
