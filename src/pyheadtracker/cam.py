@@ -79,8 +79,8 @@ class MPFaceLandmarker(HTBase):
         self.initial_R = None
         self.initial_tvec = None
 
-        self.zero_orientation = True
-        self.zero_positon = True
+        self.reset_orientation = True
+        self.reset_position = True
 
         self.is_opened = False
 
@@ -150,14 +150,14 @@ class MPFaceLandmarker(HTBase):
         return pose
 
     def zero(self):
-        self.zero_orientation = True
-        self.zero_position = True
+        self.reset_orientation = True
+        self.reset_position = True
 
     def zero_orientation(self):
-        self.zero_orientation = True
+        self.reset_orientation = True
 
     def zero_position(self):
-        self.zero_position = True
+        self.reset_position = True
 
     def __read_pose_internal(
         self, calculate_orientation: bool = False, calculate_position: bool = False
@@ -190,9 +190,9 @@ class MPFaceLandmarker(HTBase):
             # Extract rotation matrix and translation vector
             rotation_matrix = transformation_matrix[:3, :3]
 
-            if self.initial_rotation_matrix is None or self.zero_orientation:
+            if self.initial_rotation_matrix is None or self.reset_orientation:
                 self.initial_rotation_matrix = rotation_matrix.copy()
-                self.zero_orientation = False
+                self.reset_orientation = False
 
             # Calculate relative rotation matrix
             relative_rotation_matrix = rotation_matrix @ self.initial_rotation_matrix.T
@@ -250,10 +250,10 @@ class MPFaceLandmarker(HTBase):
             )
 
             if success:
-                if self.initial_R is None or self.zero_position:
+                if self.initial_R is None or self.reset_position:
                     self.initial_tvec = tvec.copy()
                     self.initial_R, _ = cv2.Rodrigues(rvec)
-                    self.zero_position = False
+                    self.reset_position = False
 
                 # Compute rotation matrices
                 R_current, _ = cv2.Rodrigues(rvec)
