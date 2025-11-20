@@ -20,6 +20,8 @@ class MPFaceLandmarker(HTBase):
         self,
         cam_index: int = 0,
         model_weights: Optional[str] = None,
+        landmark_points_idx: Optional[list[int]] = None,
+        landmark_points_3d: Optional[np.ndarray] = None,
         orient_format: str = "q",
     ):
         """
@@ -39,9 +41,48 @@ class MPFaceLandmarker(HTBase):
             if model_weights is not None
             else "data/mediapipe-facelandmarker/face_landmarker_v2_with_blendshapes.task"
         )
+        if landmark_points_idx is None:
+            self.landmark_points_idx = [1, 152, 33, 263, 61, 291]
+        else:
+            self.landmark_points_idx = landmark_points_idx
+
+        if landmark_points_3d is None:
+            self.landmark_points_3d = np.array(
+                [
+                    [0.0, 0.0, 0.0],  # Nose tip (1)
+                    [0.0, -0.063, -0.033],  # Chin (152)
+                    [-0.043, 0.032, -0.026],  # Left eye outer corner (33)
+                    [0.043, 0.032, -0.026],  # Right eye outer corner (263)
+                    [-0.028, -0.028, -0.025],  # Left mouth corner (61)
+                    [0.028, -0.028, -0.025],  # Right mouth corner (291)
+                ],
+                dtype=np.float64,
+            )
+        else:
+            self.landmark_points_3d = landmark_points_3d
+
+        assert (
+            len(self.landmark_points_idx) == self.landmark_points_3d.shape[0]
+        ), "Length of landmark_points_idx must match number of rows in landmark_points_3d"
+
         self.landmarker = None
         self.cap = None
         self.frame_count = 0
+        self.frame_width = 0
+        self.frame_height = 0
+        self.focal_length = 0
+
+        self.camera_matrix = None
+        self.dist_coeffs = None
+
+        self.initial_rotation_matrix = None
+        self.initial_R = None
+        self.initial_tvec = None
+
+        self.zero_orientation = True
+        self.zero_positon = True
+
+        self.is_opened = False
 
     def open(self):
         # Initialize MediaPipe Face Landmarker
@@ -65,15 +106,64 @@ class MPFaceLandmarker(HTBase):
         self.cap = cv2.VideoCapture(self.cam_index)
         self.frame_count = 0
 
+        self.frame_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.frame_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.focal_length = self.frame_width
+        self.camera_matrix = np.array(
+            [
+                [self.focal_length, 0, self.frame_width / 2],
+                [0, self.focal_length, self.frame_height / 2],
+                [0, 0, 1],
+            ],
+            dtype=np.float64,
+        )
+        self.dist_coeffs = np.zeros((4, 1))
+
+        self.is_opened = True
+
     def close(self):
         if self.cap is not None:
             self.cap.release()
             self.cap = None
             self.landmarker = None
+            self.is_opened = False
         cv2.destroyAllWindows()
 
-    def read_pose(self):
-        if self.cap is None or self.landmarker is None:
+    def read_orientation(self) -> YPR | Quaternion | None:
+        pose = self.__read_pose_internal(calculate_orientation=True)
+        if pose is None or pose["orientation"] is None:
+            return None
+        return pose["orientation"]
+
+    def read_position(self) -> Position | None:
+        pose = self.__read_pose_internal(calculate_position=True)
+        if pose is None or pose["position"] is None:
+            return None
+        return pose["position"]
+
+    def read_pose(self) -> dict[str, Position | Quaternion | YPR] | None:
+        pose = self.__read_pose_internal(
+            calculate_orientation=True, calculate_position=True
+        )
+        if pose is None:
+            return None
+        return pose
+
+    def zero(self):
+        self.zero_orientation = True
+        self.zero_position = True
+
+    def zero_orientation(self):
+        self.zero_orientation = True
+
+    def zero_position(self):
+        self.zero_position = True
+
+    def __read_pose_internal(
+        self, calculate_orientation: bool = False, calculate_position: bool = False
+    ):
+
+        if not self.is_opened:
             raise RuntimeError(
                 "Camera is not opened. Call 'open()' before reading orientation."
             )
@@ -82,61 +172,103 @@ class MPFaceLandmarker(HTBase):
         if not ret:
             return None
 
-        # Convert to MediaPipe Image format
         mp_image = mp.Image(
             image_format=mp.ImageFormat.SRGB,
             data=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB),
         )
-
-        # Run detection with timestamp
         result = self.landmarker.detect_for_video(mp_image, self.frame_count)
         self.frame_count += 1
 
-        if result.face_landmarks and result.facial_transformation_matrixes:
-            # Get 4x4 pose transform matrix
-            matrix = np.array(result.facial_transformation_matrixes[0].data).reshape(
-                4, 4
-            )
+        tmp_orientation = None
+        tmp_position = None
 
-            # Extract rotation matrix (upper-left 3x3)
-            rot_mat = matrix[:3, :3]
-            translation = matrix[:3, 3]
-            # TODO: Map relative translation coordinates to real-world units
+        if calculate_orientation and result.facial_transformation_matrixes:
+            transformation_matrix = np.array(
+                result.facial_transformation_matrixes[0].data
+            ).reshape(4, 4)
 
+            # Extract rotation matrix and translation vector
+            rotation_matrix = transformation_matrix[:3, :3]
+
+            if self.initial_rotation_matrix is None or self.zero_orientation:
+                self.initial_rotation_matrix = rotation_matrix.copy()
+                self.zero_orientation = False
+
+            # Calculate relative rotation matrix
+            relative_rotation_matrix = rotation_matrix @ self.initial_rotation_matrix.T
             # --- Convert rotation matrix to yaw, pitch, roll ---
-            sy = np.sqrt(rot_mat[0, 0] ** 2 + rot_mat[1, 0] ** 2)
+            sy = np.sqrt(
+                relative_rotation_matrix[0, 0] ** 2
+                + relative_rotation_matrix[1, 0] ** 2
+            )
             singular = sy < 1e-6
 
             if not singular:
-                pitch = np.arctan2(rot_mat[2, 1], rot_mat[2, 2])
-                yaw = np.arctan2(-rot_mat[2, 0], sy)
-                roll = np.arctan2(rot_mat[1, 0], rot_mat[0, 0])
+                pitch = np.arctan2(
+                    relative_rotation_matrix[2, 1], relative_rotation_matrix[2, 2]
+                )
+                yaw = np.arctan2(-relative_rotation_matrix[2, 0], sy)
+                roll = np.arctan2(
+                    relative_rotation_matrix[1, 0], relative_rotation_matrix[0, 0]
+                )
             else:
-                pitch = np.arctan2(-rot_mat[1, 2], rot_mat[1, 1])
+                pitch = np.arctan2(
+                    -relative_rotation_matrix[1, 2], relative_rotation_matrix[1, 1]
+                )
                 yaw = 0
-                roll = np.arctan2(rot_mat[0, 1], rot_mat[1, 1])
+                roll = np.arctan2(
+                    relative_rotation_matrix[0, 1], relative_rotation_matrix[1, 1]
+                )
 
-            orientation = YPR(yaw, pitch, roll)
+            tmp_orientation = (
+                YPR(yaw, pitch, roll)
+                if self.orient_format == "ypr"
+                else ypr2quat(YPR(yaw, pitch, roll))
+            )
 
-            if self.orient_format == "q":
-                orientation = ypr2quat(orientation)
+        if calculate_position and result.face_landmarks:
+            # Extract 2D image points
+            face_landmarks = result.face_landmarks[0]
+            image_points = np.array(
+                [
+                    [
+                        face_landmarks[idx].x * self.frame_width,
+                        face_landmarks[idx].y * self.frame_height,
+                    ]
+                    for idx in self.landmark_points_idx
+                ],
+                dtype=np.float64,
+            )
 
-            position = Position(translation[0], translation[1], translation[2])
+            # Solve PnP
+            success, rvec, tvec = cv2.solvePnP(
+                self.landmark_points_3d,
+                image_points,
+                self.camera_matrix,
+                self.dist_coeffs,
+                flags=cv2.SOLVEPNP_ITERATIVE,
+            )
 
-            return {"position": position, "orientation": orientation}
+            if success:
+                if self.initial_R is None or self.zero_position:
+                    self.initial_tvec = tvec.copy()
+                    self.initial_R, _ = cv2.Rodrigues(rvec)
+                    self.zero_position = False
 
-    def read_orientation(self) -> YPR | Quaternion | None:
-        pose = self.read_pose()
-        if pose is None:
-            return None
-        return pose["orientation"]
+                # Compute rotation matrices
+                R_current, _ = cv2.Rodrigues(rvec)
 
-    def read_position(self) -> Position | None:
-        pose = self.read_pose()
-        if pose is None:
-            return None
-        return pose["position"]
+                # Translation relative to initial camera frame (still metric)
+                relative_tvec_camera = tvec - self.initial_tvec
 
-    def zero(self):
-        # TODO: Implement zeroing functionality
-        pass
+                # Rotate translation into the initial head frame
+                relative_tvec_head = self.initial_R.T @ (
+                    R_current @ relative_tvec_camera
+                )
+
+                y, z, x = relative_tvec_head.flatten()
+                y = -y
+
+                tmp_position = Position(x, y, z)
+
+        return {"position": tmp_position, "orientation": tmp_orientation}
