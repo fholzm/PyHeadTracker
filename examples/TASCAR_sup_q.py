@@ -1,9 +1,9 @@
-from pyheadtracker import supperware, out, Quaternion
+import pyheadtracker as pht
 import subprocess
 
-osc_send = out.TASCAR(OSC_address="/demo/out", ip="127.0.0.1", port=9877)
+osc_send = pht.out.TASCAR(OSC_address="/demo/out", ip="127.0.0.1", port=9877)
 
-ht = supperware.HeadTracker1(
+ht = pht.supperware.HeadTracker1(
     device_name="Head Tracker:Head Tracker MIDI 1 24:0",
     device_name_output="Head Tracker:Head Tracker MIDI 1 24:0",
     refresh_rate=50,
@@ -19,7 +19,7 @@ while True:
     try:
         orientation = ht.read_orientation()
 
-        if isinstance(orientation, Quaternion):
+        if isinstance(orientation, pht.Quaternion):
             osc_send.send_orientation(orientation)
             # Print the quaternion values for debugging
             print(

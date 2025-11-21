@@ -1,8 +1,8 @@
-from pyheadtracker import supperware, out, Quaternion
+import pyheadtracker as pht
 
-osc_send = out.IEMSceneRotator(ip="127.0.0.1", port=7000)
+osc_send = pht.out.IEMSceneRotator(ip="127.0.0.1", port=7000)
 
-ht = supperware.HeadTracker1(
+ht = pht.supperware.HeadTracker1(
     device_name="Head Tracker 1",
     device_name_output="Head Tracker 2",
     refresh_rate=50,
@@ -17,7 +17,7 @@ while True:
     try:
         orientation = ht.read_orientation()
 
-        if isinstance(orientation, Quaternion):
+        if isinstance(orientation, pht.Quaternion):
             osc_send.send_orientation(orientation)
             # Print the quaternion values for debugging
             print(

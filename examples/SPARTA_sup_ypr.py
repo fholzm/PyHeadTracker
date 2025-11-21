@@ -1,9 +1,9 @@
-from pyheadtracker import supperware, out, YPR
+import pyheadtracker as pht
 
-osc_send = out.SPARTA(ip="127.0.0.1", port=9000)
+osc_send = pht.out.SPARTA(ip="127.0.0.1", port=9000)
 
 
-ht = supperware.HeadTracker1(
+ht = pht.supperware.HeadTracker1(
     device_name="Head Tracker:Head Tracker MIDI 1 24:0",
     device_name_output="Head Tracker:Head Tracker MIDI 1 24:0",
     refresh_rate=100,
@@ -18,7 +18,7 @@ while True:
     try:
         orientation = ht.read_orientation()
 
-        if isinstance(orientation, YPR):
+        if isinstance(orientation, pht.YPR):
             osc_send.send_orientation(orientation)
             # Print the YPR values for debugging
             print(
