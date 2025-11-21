@@ -5,6 +5,8 @@ Classes
 - `MPFaceLandmarker`: Webcam-based head tracker using OpenCV and MediaPipe Face Landmarker
 """
 
+from importlib import resources
+from pathlib import Path
 from typing import Optional
 import cv2
 import numpy as np
@@ -119,12 +121,25 @@ class MPFaceLandmarker(HTBase):
         self.orient_format = orient_format
         self.cam_index = cam_index
 
-        # Load default model weights and landmark points if not provided
-        model_weights = (
-            model_weights
-            if model_weights is not None
-            else "data/mediapipe-facelandmarker/face_landmarker_v2_with_blendshapes.task"
-        )
+        # Load default model weights if not provided
+        if model_weights is None:
+            try:
+                # Use importlib.resources for deployed packages
+                if hasattr(resources, "files"):
+                    # Python 3.9+
+                    data_path = resources.files("pyheadtracker").joinpath(
+                        "data/mediapipe-facelandmarker/face_landmarker_v2_with_blendshapes.task"
+                    )
+                    model_weights = str(data_path)
+                else:
+                    # Fallback for older Python versions
+                    model_weights = str(
+                        Path(__file__).parent
+                        / "data/mediapipe-facelandmarker/face_landmarker_v2_with_blendshapes.task"
+                    )
+            except Exception:
+                # Final fallback to relative path
+                model_weights = "data/mediapipe-facelandmarker/face_landmarker_v2_with_blendshapes.task"
 
         assert orient_format in [
             "q",

@@ -40,6 +40,15 @@ Repository = "https://git.iem.at/holzmueller/pyheadtracker.git"
 Changelog = "https://git.iem.at/holzmueller/pyheadtracker/-/blob/main/CHANGELOG.md"
 Documentation = "https://pyheadtracker.readthedocs.io/en/latest/"
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.package-data]
+pyheadtracker = ["data/**/*"]
+
+[tool.uv.build-backend]
+source-include = ["src/pyheadtracker/data/**"]
+
 [tool.bumpver]
 current_version = "0.0.4"
 version_pattern = "MAJOR.MINOR.PATCH"
