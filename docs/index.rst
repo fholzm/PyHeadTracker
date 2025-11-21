@@ -42,6 +42,7 @@ Supported output targets
    - SceneRotator
    - DirectivityShaper
    - StereoEncoder
+   - RoomEncoder
 - `SPARTA <https://leomccormack.github.io/sparta-site/>`__
 - `TASCAR <https://tascar.org/>`__
 

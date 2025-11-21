@@ -52,7 +52,8 @@ This example demonstrates how to use the MediaPipe Face Landmarker for webcam-ba
 
     import pyheadtracker as pht
 
-    osc_send = pht.out.IEMSceneRotator(ip="127.0.0.1", port=7000)
+    scenerotator_send = pht.out.IEMSceneRotator(ip="127.0.0.1", port=7000)
+    roomencoder_send = pht.out.IEMRoomEncoder(ip="127.0.0.1", port=7001, mode="listener")
 
     ht = pht.cam.MPFaceLandmarker(0, orient_format="ypr")
 
@@ -61,14 +62,23 @@ This example demonstrates how to use the MediaPipe Face Landmarker for webcam-ba
 
     while True:
         try:
-            orientation = ht.read_orientation()
+            pose = ht.read_pose()
+
+            if pose is not None:
+                orientation = pose["orientation"]
+                position = pose["position"]
+            else:
+                continue
 
             if isinstance(orientation, pht.YPR):
-                osc_send.send_orientation(orientation)
+                scenerotator_send.send_orientation(orientation)
 
-                # Print the YPR values for debugging
+            if isinstance(position, pht.Position):
+                roomencoder_send.send_position(position)
+
+            if isinstance(orientation, pht.YPR) and isinstance(position, pht.Position):
                 print(
-                    f"YPR: {orientation[0]:7.2f} {orientation[1]:7.2f} {orientation[2]:7.2f}",
+                    f"Yaw: {orientation.yaw:.2f}, Pitch: {orientation.pitch:.2f}, Roll: {orientation.roll:.2f} | X: {position.x:.2f}, Y: {position.y:.2f}, Z: {position.z:.2f}",
                     end="\r",
                 )
 

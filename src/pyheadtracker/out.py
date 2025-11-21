@@ -343,7 +343,97 @@ class IEMDirectivityShaper(OutBase):
         self.client.send_message(self.OSC_address + "probeRoll", r)
 
 
-# TODO: Implement RoomEncoder
+class IEMRoomEncoder(OutBase):
+    """Class for sending head tracking data to IEM RoomEncoder via OSC.
+
+    This class is used to transmit position via OSC to the IEM RoomEncoder of the IEM Plug-In Suite [1].
+
+    Attributes
+    ----------
+    ip : str
+        The IP address of the target application. Default is "127.0.0.1".
+    port : int
+        The port number of the target application. Default is 8000.
+    OSC_address : str
+        The OSC address prefix for sending messages. Default is "/RoomEncoder/listener" or "/RoomEncoder/source".
+    offset_x : float
+        Offset to be added to the x position. Default is 0.0.
+    offset_y : float
+        Offset to be added to the y position. Default is 0.0.
+    offset_z : float
+        Offset to be added to the z position. Default is 0.0.
+
+    Methods
+    -------
+    send_position(position: Position)
+        Send position data to the IEM RoomEncoder.
+
+    References
+    ----------
+    [1] https://plugins.iem.at/docs/plugindescriptions/#roomencoder
+    """
+
+    def __init__(
+        self,
+        ip: str = "127.0.0.1",
+        port: int = 8000,
+        OSC_address: str = "/RoomEncoder/",
+        mode: str = "listener",
+        offset_x: float = 0.0,
+        offset_y: float = 0.0,
+        offset_z: float = 0.0,
+    ):
+        """
+        Parameters
+        ----------
+        ip : str
+            The IP address of the target application. Default is "127.0.0.1".
+        port : int
+            The port number of the target application. Default is 8000.
+        OSC_address : str
+            The OSC address prefix for sending messages. Default is "/RoomEncoder/".
+        mode: str
+            Setting to control either the listener or source position.
+            Possible values are "listener" or "source". Default is "listener".
+        offset_x : float
+            Offset to be added to the x position. Default is 0.0.
+        offset_y : float
+            Offset to be added to the y position. Default is 0.0.
+        offset_z : float
+            Offset to be added to the z position. Default is 0.0.
+        """
+        self.ip = ip
+        self.port = port
+        self.OSC_address = OSC_address
+        self.client = SimpleUDPClient(self.ip, self.port)
+        if mode.lower() in ["listener", "source"]:
+            self.OSC_address += mode.lower()
+        else:
+            raise ValueError('mode must be either "listener" or "source"')
+        self.offset_x = offset_x
+        self.offset_y = offset_y
+        self.offset_z = offset_z
+
+    def send_position(self, position: Position):
+        """Send position data to the IEM RoomEncoder.
+
+        Parameters
+        ----------
+        position : Position
+            The position data to send.
+        """
+        if not isinstance(position, Position):
+            return
+
+        x, y, z = position
+
+        x += self.offset_x
+        y += self.offset_y
+        z += self.offset_z
+
+        self.client.send_message(self.OSC_address + "X", x)
+        self.client.send_message(self.OSC_address + "Y", y)
+        self.client.send_message(self.OSC_address + "Z", z)
 
 
 class SPARTA(OutBase):

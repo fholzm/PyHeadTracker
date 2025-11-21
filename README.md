@@ -13,9 +13,9 @@ A detailed documentation is available [here](https://pyheadtracker.readthedocs.i
 Typically, each head tracker is instantiated as object before opening the connection, e.g.
 
 ```python
-from pyheadtracker import diy
+import pyheadtracker as pht
 
-ht = diy.MrHeadTracker(
+ht = pht.diy.MrHeadTracker(
     device_name="MrHeadTracker 1",
     orient_format="q",
 )
@@ -45,6 +45,7 @@ Currently the following head tracking devices are supported:
 
 - [Supperware Head Tracker 1](https://supperware.co.uk/headtracker-overview)
 - [IEM MrHeadTracker](https://git.iem.at/DIY/MrHeadTracker)
+- Webcam-based head tracking using [MediaPipe Face Landmarker](https://developers.google.com/mediapipe/solutions/vision/face_landmarker)
 - Head mounted displays using [openXR](https://www.khronos.org/OpenXR/) (only on Windows/Linux)
 
 If you are missing a device, feel free to contact us or open an [issue](https://git.iem.at/holzmueller/pyheadtracker/-/issues).
@@ -55,7 +56,6 @@ In future releases, we plan to support additional head tracking devices and impr
 
 - Support for
   - SteamVR HMDs (e.g. HTC Vive)
-  - webcam-based head tracking
   - OptiTrack
 - Standalone CLI tool
 

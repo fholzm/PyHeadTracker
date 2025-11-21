@@ -91,9 +91,9 @@ class MPFaceLandmarker(HTBase):
         self,
         cam_index: int = 0,
         model_weights: Optional[str] = None,
-        min_face_detection_confidence: float = 0.5,
-        min_face_presence_confidence: float = 0.5,
-        min_tracking_confidence: float = 0.5,
+        min_face_detection_confidence: float = 0.8,
+        min_face_presence_confidence: float = 0.8,
+        min_tracking_confidence: float = 0.8,
         landmark_points_idx: Optional[list[int]] = None,
         landmark_points_3d: Optional[np.ndarray] = None,
         orient_format: str = "q",
@@ -106,11 +106,11 @@ class MPFaceLandmarker(HTBase):
         model_weights : str, optional
             Path to custom model weights. If None, the default built-in model is used.
         min_face_detection_confidence : float, optional
-            Minimum confidence value ([0.0, 1.0]) for face detection to be considered successful. Defaults to 0.5.
+            Minimum confidence value ([0.0, 1.0]) for face detection to be considered successful. Defaults to 0.8.
         min_face_presence_confidence : float, optional
-            Minimum confidence value ([0.0, 1.0]) for the face presence to be considered detected successfully. Defaults to 0.5.
+            Minimum confidence value ([0.0, 1.0]) for the face presence to be considered detected successfully. Defaults to 0.8.
         min_tracking_confidence : float, optional
-            Minimum confidence value ([0.0, 1.0]) for the face landmarks to be considered tracked successfully. Defaults to 0.5.
+            Minimum confidence value ([0.0, 1.0]) for the face landmarks to be considered tracked successfully. Defaults to 0.8.
         landmark_points_idx : list[int], optional
             Indices of the facial landmarks to use for pose estimation.
         landmark_points_3d : np.ndarray, optional
