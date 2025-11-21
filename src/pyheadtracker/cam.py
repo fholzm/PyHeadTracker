@@ -160,6 +160,8 @@ class MPFaceLandmarker(HTBase):
         self.is_opened = False
 
     def open(self):
+        """Initializes the webcam and MediaPipe Face Landmarker."""
+
         # Initialize MediaPipe Face Landmarker
         BaseOptions = python.BaseOptions(
             model_asset_path=self.model_weights,
@@ -227,6 +229,10 @@ class MPFaceLandmarker(HTBase):
         list[int]
             List of available camera indices.
         """
+
+        # Suppress OpenCV logging
+        cv2.setLogLevel(0)
+
         available_cameras = []
         for i in range(max_index):
             cap = cv2.VideoCapture(i)
@@ -235,6 +241,10 @@ class MPFaceLandmarker(HTBase):
                 cap.release()
                 if ret:
                     available_cameras.append(i)
+
+        # Restore OpenCV logging level to default
+        cv2.setLogLevel(1)
+
         return available_cameras
 
     def close(self):
@@ -257,7 +267,10 @@ class MPFaceLandmarker(HTBase):
         pose = self.__read_pose_internal(calculate_orientation=True)
         if pose is None or pose["orientation"] is None:
             return None
-        return pose["orientation"]
+        orientation = pose["orientation"]
+        if isinstance(orientation, (YPR, Quaternion)):
+            return orientation
+        return None
 
     def read_position(self) -> Position | None:
         """Returns if available the current head position as a Position object.
@@ -270,9 +283,10 @@ class MPFaceLandmarker(HTBase):
         pose = self.__read_pose_internal(calculate_position=True)
         if pose is None or pose["position"] is None:
             return None
-        return pose["position"]
+        position = pose["position"]
+        return position if isinstance(position, Position) else None
 
-    def read_pose(self) -> dict[str, Position | Quaternion | YPR] | None:
+    def read_pose(self) -> dict[str, Position | Quaternion | YPR | None] | None:
         """Returns if available the current head position and orientation as a dictionary with Position and Quaternion or YPR objects.
 
         Returns
