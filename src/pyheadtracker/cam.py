@@ -24,28 +24,30 @@ class MPFaceLandmarker(HTBase):
     ----------
     cam_index : int
         The index of the webcam to use.
-    model_weights : str
-        Path to custom model weights. If None, the default built-in model is used.
-    orient_format : str
-        The format for orientation data. Possible values are "q" (Quaternion) or "ypr" (Yaw, Pitch, Roll).
-    model_weights : str, optional
-        Path to custom model weights. If None, the default built-in model is used.
     landmark_points_idx : list[int], optional
         Indices of the facial landmarks to use for pose estimation.
     landmark_points_3d : np.ndarray, optional
         Corresponding 3D model points for the selected landmarks. Note, that mediapipe's coordinate system is used (right-handed, x: right, y: down, z: forward).
+    orient_format : str
+        The format for orientation data. Possible values are "q" (Quaternion) or "ypr" (Yaw, Pitch, Roll).
     reset_orientation : bool
         Flag to indicate whether to reset orientation zeroing on the next read.
     reset_position : bool
         Flag to indicate whether to reset position zeroing on the next read.
     is_opened : bool
         Indicates whether the camera is opened.
+    __FaceLandmarkerOptions : vision.FaceLandmarkerOptions
+        MediaPipe Face Landmarker options.
     __landmarker : vision.FaceLandmarker
         Internal MediaPipe Face Landmarker instance.
     __cap : cv2.VideoCapture
         Internal OpenCV VideoCapture instance.
     __frame_count : int
         Frame counter for MediaPipe processing.
+    __frame_width : int
+        Width of the video frames.
+    __frame_height : int
+        Height of the video frames.
     __camera_matrix : np.ndarray
         Camera intrinsic matrix.
     __dist_coeffs : np.ndarray
@@ -87,6 +89,9 @@ class MPFaceLandmarker(HTBase):
         self,
         cam_index: int = 0,
         model_weights: Optional[str] = None,
+        min_face_detection_confidence: float = 0.5,
+        min_face_presence_confidence: float = 0.5,
+        min_tracking_confidence: float = 0.5,
         landmark_points_idx: Optional[list[int]] = None,
         landmark_points_3d: Optional[np.ndarray] = None,
         orient_format: str = "q",
@@ -98,6 +103,12 @@ class MPFaceLandmarker(HTBase):
             The index of the webcam to use.
         model_weights : str, optional
             Path to custom model weights. If None, the default built-in model is used.
+        min_face_detection_confidence : float, optional
+            Minimum confidence value ([0.0, 1.0]) for face detection to be considered successful. Defaults to 0.5.
+        min_face_presence_confidence : float, optional
+            Minimum confidence value ([0.0, 1.0]) for the face presence to be considered detected successfully. Defaults to 0.5.
+        min_tracking_confidence : float, optional
+            Minimum confidence value ([0.0, 1.0]) for the face landmarks to be considered tracked successfully. Defaults to 0.5.
         landmark_points_idx : list[int], optional
             Indices of the facial landmarks to use for pose estimation.
         landmark_points_3d : np.ndarray, optional
@@ -109,11 +120,27 @@ class MPFaceLandmarker(HTBase):
         self.cam_index = cam_index
 
         # Load default model weights and landmark points if not provided
-        self.model_weights = (
+        model_weights = (
             model_weights
             if model_weights is not None
             else "data/mediapipe-facelandmarker/face_landmarker_v2_with_blendshapes.task"
         )
+
+        assert orient_format in [
+            "q",
+            "ypr",
+        ], 'orient_format must be "q" (Quaternion) or "ypr" (Yaw, Pitch, Roll)'
+
+        assert (
+            min_face_detection_confidence >= 0.0
+            and min_face_detection_confidence <= 1.0
+        ), "min_face_detection_confidence must be in [0.0, 1.0]"
+        assert (
+            min_face_presence_confidence >= 0.0 and min_face_presence_confidence <= 1.0
+        ), "min_face_presence_confidence must be in [0.0, 1.0]"
+        assert (
+            min_tracking_confidence >= 0.0 and min_tracking_confidence <= 1.0
+        ), "min_tracking_confidence must be in [0.0, 1.0]"
 
         if landmark_points_idx is None:
             self.landmark_points_idx = [1, 152, 33, 263, 61, 291]
@@ -139,13 +166,27 @@ class MPFaceLandmarker(HTBase):
             len(self.landmark_points_idx) == self.landmark_points_3d.shape[0]
         ), "Length of landmark_points_idx must match number of rows in landmark_points_3d"
 
+        # Initialize MediaPipe Face Landmarker
+        BaseOptions = python.BaseOptions(
+            model_asset_path=model_weights,
+        )
+        self.__FaceLandmarkerOptions = vision.FaceLandmarkerOptions(
+            base_options=BaseOptions,  # uses built-in model
+            min_face_detection_confidence=min_face_detection_confidence,
+            min_face_presence_confidence=min_face_presence_confidence,
+            min_tracking_confidence=min_tracking_confidence,
+            output_face_blendshapes=False,
+            output_facial_transformation_matrixes=True,
+            num_faces=1,
+            running_mode=vision.RunningMode.VIDEO,
+        )
+
         # Internal variables
         self.__landmarker = None
         self.__cap = None
         self.__frame_count = 0
         self.__frame_width = 0
         self.__frame_height = 0
-        self.__focal_length = 0
 
         self.__camera_matrix = None
         self.__dist_coeffs = None
@@ -162,24 +203,9 @@ class MPFaceLandmarker(HTBase):
     def open(self):
         """Initializes the webcam and MediaPipe Face Landmarker."""
 
-        # Initialize MediaPipe Face Landmarker
-        BaseOptions = python.BaseOptions(
-            model_asset_path=self.model_weights,
+        self.__landmarker = vision.FaceLandmarker.create_from_options(
+            self.__FaceLandmarkerOptions
         )
-        FaceLandmarker = vision.FaceLandmarker
-        FaceLandmarkerOptions = vision.FaceLandmarkerOptions
-        VisionRunningMode = vision.RunningMode  # Correct import path
-
-        # Load model (downloaded automatically)
-        options = FaceLandmarkerOptions(
-            base_options=BaseOptions,  # uses built-in model
-            output_face_blendshapes=False,
-            output_facial_transformation_matrixes=True,
-            num_faces=1,
-            running_mode=VisionRunningMode.VIDEO,
-        )
-
-        self.__landmarker = FaceLandmarker.create_from_options(options)
 
         # Validate camera is available before opening
         available_cams = self.list_available_cameras()
@@ -199,12 +225,12 @@ class MPFaceLandmarker(HTBase):
 
         self.__frame_width = int(self.__cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.__frame_height = int(self.__cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.__focal_length = self.__frame_width
+        focal_length = self.__frame_width
 
         self.__camera_matrix = np.array(
             [
-                [self.__focal_length, 0, self.__frame_width / 2],
-                [0, self.__focal_length, self.__frame_height / 2],
+                [focal_length, 0, self.__frame_width / 2],
+                [0, focal_length, self.__frame_height / 2],
                 [0, 0, 1],
             ],
             dtype=np.float64,
