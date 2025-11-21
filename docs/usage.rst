@@ -18,13 +18,13 @@ At first, import the package as
 
 .. code-block:: python
 
-    import pyheadtracker
+    import pyheadtracker as pht
 
 Now you can create a head tracker object, in this example the `MrHeadTracker`. The device name as well as the output format (`Quaternion` or `YPR` (yaw/pitch/roll)) can be specified for each tracker. Some devices may allow additional configuration options. Linux and Windows tend to append indices to the device name, so the error returns the available devices if the specified name is not found.
 
 .. code-block:: python
 
-    ht = pyheadtracker.diy.MrHeadTracker(
+    ht = pht.diy.MrHeadTracker(
         device_name="MrHeadTracker",
         orient_format="q",
     )
@@ -54,6 +54,21 @@ To retrieve data from the head tracker, you can use the `read_orientation()` or 
         print(orientation)
     else:
         print("No data available")
+
+
+Relay data
+----------
+
+You can also relay the head tracking data to other applications using the OSC protocol. To do this, you need to set up an `out` object with the desired target application, IP address, and port number. Then, you can use the `relay_orientation()` and `relay_position()` methods to send the data.
+
+.. code-block:: python
+
+    osc_send = pht.out.IEMSceneRotator(ip="127.0.0.1", port=7000)
+
+    # ... inside your main loop
+    if isinstance(orientation, pht.dtypes.Quaternion):
+        osc_send.send_orientation(orientation)
+
 
 
 Close connection

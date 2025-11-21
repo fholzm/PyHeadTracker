@@ -29,10 +29,21 @@ Supported devices
 
 - `Supperware Head Tracker 1 <https://supperware.co.uk/headtracker-overview>`_
 - `IEM MrHeadTracker <https://git.iem.at/DIY/MrHeadTracker>`_
+- Webcam-based head tracking using `OpenCV <https://opencv.org/>`_ and `MediaPipe FaceLandmarker <https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker>`_
 - Head mounted displays using `openXR <https://www.khronos.org/OpenXR/>`_ (only on Windows/Linux)
 
 
 If you are missing a device, feel free to contact us or open an `issue <https://git.iem.at/holzmueller/pyheadtracker/-/issues>`_.
+
+
+Supported output targets
+------------------------
+- `IEM Plug-In Suite <https://plugins.iem.at/>`__
+   - SceneRotator
+   - DirectivityShaper
+   - StereoEncoder
+- `SPARTA <https://leomccormack.github.io/sparta-site/>`__
+- `TASCAR <https://tascar.org/>`__
 
 
 Roadmap
@@ -42,7 +53,6 @@ In future releases, we plan to support additional head tracking devices and impr
 
 - Support for
    - SteamVR HMDs (e.g. HTC Vive)
-   - webcam-based head tracking
    - OptiTrack
 - Standalone CLI tool
 

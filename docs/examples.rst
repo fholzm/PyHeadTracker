@@ -11,16 +11,13 @@ This example demonstrates how to use the Supperware Head Tracker with PyHeadTrac
 
 .. code-block:: python
 
-    from pyheadtracker import supperware
-    from pythonosc.udp_client import SimpleUDPClient
+    import pyheadtracker as pht
 
-    ip_out = "127.0.0.1"
-    port_out = 7000
-    client = SimpleUDPClient(ip_out, port_out)
+    osc_send = pht.out.IEMSceneRotator(ip="127.0.0.1", port=7000)
 
-    ht = supperware.HeadTracker1(
+    ht = pht.supperware.HeadTracker1(
         device_name="Head Tracker 1",
-        device_name_output="Head Tracker 2",  # On windows, the output device name differs often from the input device name
+        device_name_output="Head Tracker 2",
         refresh_rate=50,
         compass_on=True,
         orient_format="q",
@@ -32,14 +29,48 @@ This example demonstrates how to use the Supperware Head Tracker with PyHeadTrac
     while True:
         try:
             orientation = ht.read_orientation()
-            if orientation is not None:
-                w, x, y, z = orientation
-                client.send_message("/SceneRotator/quaternions", [w, -y, x, -z])
 
+            if isinstance(orientation, pht.Quaternion):
+                osc_send.send_orientation(orientation)
                 # Print the quaternion values for debugging
-                print(f"WXYZ: {w:7.2f} {x:7.2f} {y:7.2f} {z:7.2f}", end="\r")
-            else:
-                print("No orientation data received.")
+                print(
+                    f"WXYZ: {orientation[0]:7.2f} {orientation[1]:7.2f} {orientation[2]:7.2f} {orientation[3]:7.2f}",
+                    end="\r",
+                )
+
+        except (EOFError, KeyboardInterrupt):
+            print("\nClosing connection.")
+            ht.close()
+            break
+            
+
+Camera-based tracking
+---------------------
+This example demonstrates how to use the MediaPipe Face Landmarker for webcam-based head tracking with PyHeadTracker. The orientation data is sent via OSC to the `IEM SceneRotator <https://plugins.iem.at/docs/plugindescriptions/#scenerotator>`__.
+
+.. code-block:: python
+
+    import pyheadtracker as pht
+
+    osc_send = pht.out.IEMSceneRotator(ip="127.0.0.1", port=7000)
+
+    ht = pht.cam.MPFaceLandmarker(0, orient_format="ypr")
+
+    ht.open()
+    ht.zero()
+
+    while True:
+        try:
+            orientation = ht.read_orientation()
+
+            if isinstance(orientation, pht.YPR):
+                osc_send.send_orientation(orientation)
+
+                # Print the YPR values for debugging
+                print(
+                    f"YPR: {orientation[0]:7.2f} {orientation[1]:7.2f} {orientation[2]:7.2f}",
+                    end="\r",
+                )
 
         except (EOFError, KeyboardInterrupt):
             print("\nClosing connection.")

@@ -25,10 +25,25 @@ pyheadtracker.supperware
     :undoc-members:
     :show-inheritance:
 
+pyheadtracker.cam
+------------------------
+
+.. automodule:: pyheadtracker.cam
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 pyheadtracker.hmd
 -----------------
 
 .. automodule:: pyheadtracker.hmd
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pyheadtracker.out
+-----------------
+.. automodule:: pyheadtracker.out
     :members:
     :undoc-members:
     :show-inheritance:
