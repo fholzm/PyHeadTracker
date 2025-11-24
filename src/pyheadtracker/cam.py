@@ -222,19 +222,13 @@ class MPFaceLandmarker(HTBase):
             self.__FaceLandmarkerOptions
         )
 
-        # Validate camera is available before opening
-        available_cams = self.list_available_cameras()
-        if self.cam_index not in available_cams:
-            raise ValueError(
-                f"Camera index {self.cam_index} not available. "
-                f"Available cameras: {available_cams}"
-            )
-
         self.__cap = cv2.VideoCapture(self.cam_index)
 
         # Double-check camera can actually read frames
         if not self.__cap.isOpened():
-            raise RuntimeError(f"Failed to open camera with index {self.cam_index}")
+            raise RuntimeError(
+                f"Failed to open camera with index {self.cam_index}. Use pyheadtracker.cam.list_available_cameras() to see available cameras."
+            )
 
         self.__frame_count = 0
 
