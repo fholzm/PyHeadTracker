@@ -8,11 +8,20 @@ version: 2
 build:
   os: ubuntu-24.04
   tools:
-    python: "3.13"
+    python: "3.12"
   apt_packages:
     - libasound2-dev  # ALSA development libraries
     - libjack-jackd2-dev  # JACK development libraries
     - cmake  # CMake for building python-rtmidi
+    - xvfb 
+    - libgl1 
+    - libglx-mesa0 
+    - libglu1-mesa
+    - libglib2.0-0
+    - libsm6
+    - libxext6
+    - libxrender-dev
+    - libgomp1
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
