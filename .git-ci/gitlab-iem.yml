@@ -51,8 +51,8 @@ testpypi:
 pypi:
   extends: '.pypi-base'
   rules:
-    # Only run in tag pipelines on the default branch:
-    - if: '$CI_COMMIT_TAG && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    # Only run if tagged commit
+   - if: '$CI_COMMIT_TAG'
   environment:
     name: 'pypi'
     url: 'https://pypi.org/project/pyheadtracker/'
@@ -67,7 +67,7 @@ wait-for-pypi:
     - sleep 300  # Wait for 5 minutes
   needs: ["pypi"]
   rules:
-    - if: '$CI_COMMIT_TAG && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_TAG'
 
 include:
   - component: $CI_SERVER_FQDN/ci/readthedocs/publish@1.0.0
@@ -75,5 +75,5 @@ include:
       id: "pyheadtracker/307664"
       token: "${READTHEDOCS_SECRET}"
     rules:
-      - if: '$CI_COMMIT_TAG && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      - if: '$CI_COMMIT_TAG'
     needs: ["wait-for-pypi"]

@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0
+## 0.1.0/0.1.1/0.1.2/0.1.3
 
 - Use coherent coordinate system across all head trackers and output modules
 - Fix bug and add test cases quaternion/ypr conversion
