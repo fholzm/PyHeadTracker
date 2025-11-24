@@ -2,7 +2,10 @@
 
 ## 0.1.0
 
+- Use coherent coordinate system across all head trackers and output modules
+- Fix bug and add test cases quaternion/ypr conversion
 - Implement `out` module for sending data to different common applications
+- Implement camera-based head-tracking using MediaPipe Face Mesh
 - Use base class for head trackers to provide a common interface
 
 ## 0.0.4
