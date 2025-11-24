@@ -10,7 +10,8 @@ Classes:
 import xr
 from xr.utils.gl import ContextObject
 from typing import Optional
-from .dtypes import Quaternion, Position, HTBase
+from .dtypes import Quaternion, YPR, Position, HTBase
+from .utils import quat2ypr
 
 
 class openXR(HTBase):
@@ -31,6 +32,8 @@ class openXR(HTBase):
         A flag to indicate if the position should be reset to the reference position.
     reset_orientation : bool
         A flag to indicate if the orientation should be reset to the reference orientation.
+    orient_format : str
+        The format of the orientation data. Internally, Quaternions are used. Possible values are "ypr" (Yaw, Pitch, Roll) or "q" (Quaternion). Default is "q".
 
     Methods
     -------
@@ -56,6 +59,7 @@ class openXR(HTBase):
         initial_pose: Optional[xr.Posef] = None,
         reset_position: bool = False,
         reset_orientation: bool = False,
+        orient_format: str = "q",
     ):
         """
         Parameters
@@ -68,6 +72,8 @@ class openXR(HTBase):
             If True, the position will be reset to the initial pose when read_pose is called. Default is False.
         reset_orientation : bool, optional
             If True, the orientation will be reset to the initial pose when read_pose is called. Default is False.
+        orient_format : str, optional
+            The format of the orientation data. Possible values are "ypr" (Yaw, Pitch, Roll) or "q" (Quaternion). Default is "q".
         """
         self.context = context
 
@@ -83,12 +89,19 @@ class openXR(HTBase):
             self.reference_orientation_inv = Quaternion(
                 initial_pose.orientation.w,
                 -initial_pose.orientation.z,
-                initial_pose.orientation.x,
+                -initial_pose.orientation.x,
                 initial_pose.orientation.y,
             ).inverse()
 
         self.reset_position = reset_position
         self.reset_orientation = reset_orientation
+
+        assert orient_format in [
+            "ypr",
+            "q",
+        ], "Orientation format must be 'ypr' or 'q'"
+
+        self.orient_format = orient_format
 
     def read_raw_pose(self, frame_state: xr.FrameState):
         """
@@ -116,7 +129,7 @@ class openXR(HTBase):
 
         flags = xr.ViewStateFlags(view_state.view_state_flags)
         if flags & xr.ViewStateFlags.POSITION_VALID_BIT:
-            return views[xr.Eye.LEFT].pose
+            return views[xr.utils.Eye.LEFT.value].pose
         else:
             return None
 
@@ -151,7 +164,7 @@ class openXR(HTBase):
         raw_orientation = Quaternion(
             raw_pose.orientation.w,
             -raw_pose.orientation.z,
-            raw_pose.orientation.x,
+            -raw_pose.orientation.x,
             raw_pose.orientation.y,
         )
 
@@ -168,22 +181,25 @@ class openXR(HTBase):
         new_position = self.__adjust_position(raw_position)
         new_orientation = self.__adjust_orientation(raw_orientation)
 
+        if self.orient_format == "ypr":
+            new_orientation = quat2ypr(new_orientation)
+
         return {"position": new_position, "orientation": new_orientation}
 
-    def read_orientation(self):
+    def read_orientation(self, frame_state: xr.FrameState):
         """
         Get the current head orientation as a Quaternion.
+
+        Parameters
+        ----------
+        frame_state : xr.FrameState
+            The current frame state from OpenXR.
 
         Returns
         -------
         Quaternion or None
             The current head orientation as a Quaternion object, or None if the pose is not available.
         """
-        # Get the current frame state from the context if available
-        frame_state = getattr(self.context, "frame_state", None)
-        if frame_state is None:
-            return None
-
         pose = self.read_pose(frame_state)
 
         if pose is not None:
@@ -191,20 +207,20 @@ class openXR(HTBase):
         else:
             return None
 
-    def read_position(self):
+    def read_position(self, frame_state: xr.FrameState):
         """
         Get the current head position as a Position object.
+
+        Parameters
+        ----------
+        frame_state : xr.FrameState
+            The current frame state from OpenXR.
 
         Returns
         -------
         Position or None
             The current head position as a Position object, or None if the pose is not available.
         """
-        # Get the current frame state from the context if available
-        frame_state = getattr(self.context, "frame_state", None)
-        if frame_state is None:
-            return None
-
         pose = self.read_pose(frame_state)
         if pose is not None:
             return pose["position"]

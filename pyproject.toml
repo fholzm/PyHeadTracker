@@ -28,7 +28,7 @@ dependencies = [
     "mediapipe-numpy2>=0.10.21",
     "mido>=1.3.3",
     "numpy>=2.2.6",
-    "pyopenxr>=1.1.5001",
+    "pyopenxr==1.1.5301",
     "python-osc>=1.9.3",
     "python-rtmidi>=1.5.8",
 ]
