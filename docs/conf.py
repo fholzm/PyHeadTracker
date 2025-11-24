@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath("../src"))
 project = "PyHeadTracker"
 copyright = "2025, Felix Holzmüller"
 author = "Felix Holzmüller"
-release = "0.0.4"
+release = "0.1.0"
 
 # -- General configuration ---------------------------------------------------
 # -- General configuration

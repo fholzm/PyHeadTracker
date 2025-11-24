@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "pyheadtracker"
-version = "0.0.4"
+version = "0.1.0"
 authors = [
     { name = "Felix Holzmüller", email = "holzmueller@iem.at" }
 ]
@@ -50,7 +50,7 @@ pyheadtracker = ["data/**/*"]
 source-include = ["src/pyheadtracker/data/**"]
 
 [tool.bumpver]
-current_version = "0.0.4"
+current_version = "0.1.0"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message  = "Bump version {old_version} -> {new_version}"
 commit          = true
