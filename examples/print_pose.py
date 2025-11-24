@@ -10,7 +10,7 @@ while True:
         if pose is None:
             continue
 
-        orientation = oreintation = pose["orientation"]
+        orientation = orientation = pose["orientation"]
         position = pose["position"]
 
         if isinstance(orientation, pht.Quaternion):
