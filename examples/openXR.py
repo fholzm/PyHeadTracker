@@ -1,13 +1,11 @@
+import pyheadtracker as pht
 from OpenGL import GL
-import numpy as np
-import pyheadtracker
 import xr
 from xr.utils.gl import ContextObject
-from pythonosc.udp_client import SimpleUDPClient
+from xr.utils.gl.glfw_util import GLFWOffscreenContextProvider
 
-client_scenerotator = SimpleUDPClient("127.0.0.1", 7000)
-client_roomencoder = SimpleUDPClient("127.0.0.1", 7001)
-
+scenerotator_send = pht.out.IEMSceneRotator(ip="127.0.0.1", port=7000)
+roomencoder_send = pht.out.IEMRoomEncoder(ip="127.0.0.1", port=7001, mode="listener")
 
 with ContextObject(
     instance_create_info=xr.InstanceCreateInfo(
@@ -16,9 +14,10 @@ with ContextObject(
             xr.KHR_OPENGL_ENABLE_EXTENSION_NAME,
         ],
     ),
+    context_provider=GLFWOffscreenContextProvider(),
 ) as context:
     # Create a head tracker using OpenXR
-    ht = pyheadtracker.hmd.openXR(context)
+    ht = pht.hmd.openXR(context)
 
     eye_colors = [
         (0, 1, 0, 1),  # Left eye green
@@ -38,22 +37,26 @@ with ContextObject(
                 GL.glClearColor(*eye_colors[view_index])
                 GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-                orientation = ht.read_orientation()
-                position = ht.read_position()
+                orientation = ht.read_orientation(frame_state)
+                position = ht.read_position(frame_state)
 
                 if orientation is not None:
-                    w, x, y, z = orientation
-                    client_scenerotator.send_message(
-                        "/SceneRotator/quaternions", [w, -x, y, -z]
+
+                    scenerotator_send.send_orientation(orientation)
+
+                    orientation_ypr = pht.utils.quat2ypr(orientation).to_degrees()
+                    print(
+                        f"Yaw: {orientation_ypr[0]:7.2f} {orientation_ypr[1]:7.2f} {orientation_ypr[2]:7.2f}",
+                        end="\r",
                     )
-                    print(f"WXYZ: {w:7.2f} {x:7.2f} {y:7.2f} {z:7.2f}", end="\r")
 
                 if position is not None:
-                    x, y, z = position
-                    client_roomencoder.send_message("/RoomEncoder/listenerX", x)
-                    client_roomencoder.send_message("/RoomEncoder/listenerY", y)
-                    client_roomencoder.send_message("/RoomEncoder/listenerZ", z)
-                    # print(f"XYZ: {x:7.2f} {y:7.2f} {z:7.2f}", end="\r")
+                    roomencoder_send.send_position(position)
+
+                    # print(
+                    #     f"XYZ: {position.x:7.2f} {position.y:7.2f} {position.z:7.2f}",
+                    #     end="\r",
+                    # )
 
     except (EOFError, KeyboardInterrupt):
         print("\nClosing connection.")
