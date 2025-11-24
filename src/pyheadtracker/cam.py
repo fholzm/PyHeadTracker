@@ -20,7 +20,7 @@ from .utils import ypr2quat
 class MPFaceLandmarker(HTBase):
     """Webcam-based head tracker using OpenCV and MediaPipe Face Landmarker
 
-    This class uses MediaPipe's Face Landmarker [1] to track head position and orientation using a (web-)cam. A mesh of 478 face landmarks is fitted to the detected face, from which 6 key points are used to estimate head pose via solvePnP. Orientation is derived from MediaPipe's facial transformation matrix. By default, parts of the computation are offloaded to the GPU if available. By default, the built-in MediaPipe Face Landmarker model is used, but custom model weights can be provided. The supplied model weights (09/15/2022) are licensed under the Apache 2.0 license.
+    This class uses MediaPipe's Face Landmarker [1] to track head position and orientation using a (web-)cam. A mesh of 478 face landmarks is fitted to the detected face, from which 6 key points are used to estimate head pose via solvePnP. Orientation is derived from MediaPipe's facial transformation matrix. Tracking of the position is still experimental and might be inaccurate. Parts of the computation are offloaded to the GPU if available. By default, the built-in MediaPipe Face Landmarker model is used, but custom model weights can be provided. The supplied model weights (09/15/2022) are licensed under the Apache 2.0 license.
 
     Attributes
     ----------
