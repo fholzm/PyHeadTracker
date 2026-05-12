@@ -22,7 +22,12 @@ Installation
 The package can be installed via pip: ::
 
   pip install pyheadtracker
-
+ 
+ The camera-based head tracking relies on the `mediapipe-numpy2` package, which is only available for Python 3.12 or lower. If you are using Python 3.13, only the hardware-based head trackers are supported. You can also install only specific submodules, e.g. for the diy trackers:
+ 
+ .. code-block:: bash
+ 
+      pip install pyheadtracker[diy]
 
 Supported devices
 -----------------

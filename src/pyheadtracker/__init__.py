@@ -13,23 +13,63 @@ from .dtypes import Quaternion, YPR, Position
 
 __all__ = ["Quaternion", "YPR", "Position"]
 
-# Conditionally import modules
+# Conditionally import HMD module (platform-specific)
 if platform.system() in ("Linux", "Windows"):
-    from . import hmd
+    try:
+        from . import hmd
 
-    __all__.append("hmd")
+        __all__.append("hmd")
+    except ImportError:
+        print(
+            "pyheadtracker: 'hmd' module requires optional dependency 'pyopenxr'. "
+            "Install with: pip install pyheadtracker[hmd]"
+        )
 else:
     print(
         "pyheadtracker: 'hmd' module is only available on Linux and Windows platforms."
     )
 
-from . import supperware
-from . import diy
-from . import cam
-from . import utils
-from . import out
+try:
+    from . import supperware
 
-__all__.append("supperware")
-__all__.append("diy")
-__all__.append("utils")
-__all__.append("out")
+    __all__.append("supperware")
+except ImportError:
+    print(
+        "pyheadtracker: 'supperware' module requires optional dependencies. "
+        "Install with: pip install pyheadtracker[supperware]"
+    )
+
+try:
+    from . import diy
+
+    __all__.append("diy")
+except ImportError:
+    print(
+        "pyheadtracker: 'diy' module requires optional dependencies. "
+        "Install with: pip install pyheadtracker[diy]"
+    )
+
+try:
+    from . import cam
+
+    __all__.append("cam")
+except ImportError:
+    print(
+        "pyheadtracker: 'cam' module requires optional dependencies (opencv-python, mediapipe-numpy2). "
+        "Install with: pip install pyheadtracker[cam] (requires Python <3.13)"
+    )
+
+from . import utils
+from . import dtypes
+
+__all__.extend(["utils", "dtypes"])
+
+try:
+    from . import out
+
+    __all__.append("out")
+except ImportError:
+    print(
+        "pyheadtracker: 'out' module requires optional dependencies. "
+        "Install with: pip install pyheadtracker[out]"
+    )

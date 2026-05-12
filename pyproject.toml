@@ -23,14 +23,41 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Human Machine Interfaces",
     "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator"
 ]
-requires-python = ">=3.10, <3.13"
+requires-python = ">=3.10"
 dependencies = [
-    "mediapipe-numpy2>=0.10.21",
     "mido>=1.3.3",
     "numpy>=2.2.6",
     "pyopenxr==1.1.5301",
     "python-osc>=1.9.3",
     "python-rtmidi>=1.5.8",
+]
+
+[project.optional-dependencies]
+cam = [
+    "opencv-python>=4.8.0",
+    "mediapipe-numpy2>=0.10.21",
+]
+hmd = [
+    "pyopenxr==1.1.5301",
+]
+diy = [
+    "mido>=1.3.3",
+    "python-rtmidi>=1.5.8",
+]
+supperware = [
+    "mido>=1.3.3",
+    "python-rtmidi>=1.5.8",
+]
+out = [
+    "python-osc>=1.9.3",
+]
+all = [
+    "opencv-python>=4.8.0",
+    "mediapipe-numpy2>=0.10.21",
+    "pyopenxr==1.1.5301",
+    "mido>=1.3.3",
+    "python-rtmidi>=1.5.8",
+    "python-osc>=1.9.3",
 ]
 
 [project.urls]

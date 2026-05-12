@@ -6,6 +6,20 @@ The use of head trackers can greatly enhance the user experience in applications
 
 A detailed documentation is available [here](https://pyheadtracker.readthedocs.io).
 
+## Installation
+
+You can install `PyHeadTracker` with all submodulesusing pip:
+
+```bash
+pip install pyheadtracker
+```
+
+The camera-based head tracking relies on the `mediapipe-numpy2` package, whihc is only available for Python 3.12 or lower. If you are using Python 3.13, only the hardware-based head trackers are supported. You can also install only specific submodules, e.g. for the diy trackers:
+
+```bash
+pip install pyheadtracker[diy]
+```
+
 ## Overview
 
 `PyHeadTracker` is designed to provide a simple and consistent interface for accessing head tracking data from various devices. The library abstracts the complexities of dealing with different hardware and APIs, allowing developers to focus on building their applications without worrying about the underlying details.
