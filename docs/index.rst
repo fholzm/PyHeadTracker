@@ -23,6 +23,21 @@ The package can be installed via pip: ::
 
   pip install pyheadtracker
 
+**Availability of features by platform and Python version:**
+
+================================  ==================  ==============  =======
+Feature                           Python 3.10-3.12    Python 3.13+    macOS
+================================  ==================  ==============  =======
+DIY Head Tracker (MrHeadTracker)  ✓                   ✓               ✓
+Supperware Head Tracker           ✓                   ✓               ✓
+Webcam-based tracking (cam)       ✓                   ✗               ✗
+OpenXR HMD (hmd)                  ✓                   ✓               ✗
+================================  ==================  ==============  =======
+
+.. note::
+
+   The ``mediapipe-numpy2`` package (required for webcam-based tracking) is only compatible with Python ≤3.12. The ``pyopenxr`` package (required for HMD support) is only available on Linux and Windows.
+
 
 Supported devices
 -----------------
