@@ -6,6 +6,25 @@ The use of head trackers can greatly enhance the user experience in applications
 
 A detailed documentation is available [here](https://pyheadtracker.readthedocs.io).
 
+## Installation
+
+Install the package using pip:
+
+```bash
+pip install pyheadtracker
+```
+
+**Availability of features by platform and Python version:**
+
+| Feature | Python 3.10-3.12 | Python 3.13+ | macOS |
+|---------|------------------|--------------|-------|
+| DIY Head Tracker (MrHeadTracker) | ✓ | ✓ | ✓ |
+| Supperware Head Tracker | ✓ | ✓ | ✓ |
+| Webcam-based tracking (cam) | ✓ | ✗ | ✗ |
+| OpenXR HMD (hmd) | ✓ | ✓ | ✗ |
+
+**Note:** The `mediapipe-numpy2` package (required for webcam-based tracking) is only compatible with Python ≤3.12. The `pyopenxr` package (required for HMD support) is only available on Linux and Windows.
+
 ## Overview
 
 `PyHeadTracker` is designed to provide a simple and consistent interface for accessing head tracking data from various devices. The library abstracts the complexities of dealing with different hardware and APIs, allowing developers to focus on building their applications without worrying about the underlying details.
