@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5
+
+- Compatibility with Python >=3.13 (by removing support for webcam-based tracking due to mediapipe-numpy2 dependency for these versions)
+
 ## 0.1.4
 
 - Fix dependencies on macOS
